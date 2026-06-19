@@ -1,0 +1,30 @@
+# Credentials
+.env
+.env.*
+!.env.example
+
+# Python Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Python compiled bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDEs and editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini

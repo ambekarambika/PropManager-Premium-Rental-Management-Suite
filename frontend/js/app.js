@@ -1,11 +1,11 @@
-/* js/app.js - Frontend application controller */
+
 import * as api from './api.js';
 
-// Application State
+
 let currentUser = null;
 let currentView = 'dashboard';
 
-// DOM Elements cache
+
 const DOM = {
   authOverlay: document.getElementById('auth-overlay'),
   loginForm: document.getElementById('login-form'),
@@ -29,7 +29,7 @@ const DOM = {
   toast: document.getElementById('toast'),
   toastMessage: document.getElementById('toast-message'),
   
-  // Views
+  
   views: {
     dashboard: document.getElementById('view-dashboard'),
     properties: document.getElementById('view-properties'),
@@ -40,10 +40,10 @@ const DOM = {
     users: document.getElementById('view-users')
   },
   
-  // Navigation Menu Items
+  
   navItems: document.querySelectorAll('.nav-item'),
   
-  // Modals
+  
   modals: {
     property: document.getElementById('modal-property'),
     tenant: document.getElementById('modal-tenant'),
@@ -53,7 +53,7 @@ const DOM = {
     booking: document.getElementById('modal-booking')
   },
   
-  // Modal Forms
+  
   forms: {
     property: document.getElementById('form-property'),
     tenant: document.getElementById('form-tenant'),
@@ -64,17 +64,17 @@ const DOM = {
   }
 };
 
-// -------------------------------------------------------------
-// APP INITIALIZATION
-// -------------------------------------------------------------
+
+
+
 document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
   await checkAuth();
 });
 
-// Setup global event handlers
+
 function setupEventListeners() {
-  // Authentication Forms
+  
   if (DOM.loginForm) DOM.loginForm.addEventListener('submit', handleLogin);
   if (DOM.registerForm) DOM.registerForm.addEventListener('submit', handleRegister);
   
@@ -94,7 +94,7 @@ function setupEventListeners() {
     });
   }
   
-  // Sidebar Navigation Switcher
+  
   DOM.navItems.forEach(item => {
     item.addEventListener('click', () => {
       const view = item.getAttribute('data-view');
@@ -102,7 +102,7 @@ function setupEventListeners() {
     });
   });
 
-  // Logout Trigger
+  
   if (DOM.logoutBtn) {
     DOM.logoutBtn.addEventListener('click', () => {
       api.logout();
@@ -111,7 +111,7 @@ function setupEventListeners() {
     });
   }
 
-  // Add Button actions
+  
   if (DOM.addPropertyBtn) {
     DOM.addPropertyBtn.addEventListener('click', () => {
       openPropertyModal();
@@ -125,14 +125,14 @@ function setupEventListeners() {
     });
   }
 
-  // Setup modal close buttons
+  
   document.querySelectorAll('.modal-close, .btn-cancel').forEach(btn => {
     btn.addEventListener('click', () => {
       closeAllModals();
     });
   });
 
-  // Property Filters Tabs (Dashboard Properties Section)
+  
   document.querySelectorAll('#prop-tabs .tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('#prop-tabs .tab').forEach(t => t.classList.remove('active'));
@@ -142,7 +142,7 @@ function setupEventListeners() {
     });
   });
 
-  // Search input on properties view
+  
   if (DOM.globalSearchInput) {
     DOM.globalSearchInput.addEventListener('input', (e) => {
       const val = e.target.value;
@@ -152,7 +152,7 @@ function setupEventListeners() {
     });
   }
 
-  // Modals form submissions
+  
   if (DOM.forms.property) DOM.forms.property.addEventListener('submit', handlePropertySubmit);
   if (DOM.forms.tenant) DOM.forms.tenant.addEventListener('submit', handleTenantSubmit);
   if (DOM.forms.agreement) DOM.forms.agreement.addEventListener('submit', handleAgreementSubmit);
@@ -160,7 +160,7 @@ function setupEventListeners() {
   if (DOM.forms.user) DOM.forms.user.addEventListener('submit', handleUserSubmit);
   if (DOM.forms.booking) DOM.forms.booking.addEventListener('submit', handleBookingSubmit);
 
-  // Agreements tabs selector
+  
   const agreementsTabs = document.getElementById('agreements-tabs');
   if (agreementsTabs) {
     agreementsTabs.querySelectorAll('.tab').forEach(tab => {
@@ -185,7 +185,7 @@ function setupEventListeners() {
     });
   }
 
-  // Role Switcher buttons inside the login overlay (for easy local review)
+  
   document.querySelectorAll('.role-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
@@ -195,37 +195,37 @@ function setupEventListeners() {
       const passwordInput = document.getElementById('login-password');
       if (emailInput && passwordInput) {
         emailInput.value = email;
-        passwordInput.value = 'password'; // Mock matches any
+        passwordInput.value = 'password'; 
       }
     });
   });
 }
 
-// -------------------------------------------------------------
-// AUTHENTICATION LOGIC
-// -------------------------------------------------------------
+
+
+
 async function checkAuth() {
   currentUser = await api.getCurrentUser();
   if (currentUser) {
-    // Logged in
+    
     DOM.authOverlay.style.display = 'none';
     DOM.appRoot.style.display = 'flex';
     
-    // Set Profile UI Info
+    
     DOM.userNameDisplay.textContent = currentUser.name;
     DOM.userRoleDisplay.textContent = currentUser.role === 'manager' ? 'Property Manager' : currentUser.role;
     
-    // Set avatar initials
+    
     const initials = currentUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     DOM.userAvatarDisplay.textContent = initials;
     
-    // Hide or show features based on Role
+    
     applyRolePermissions();
     
-    // Load current view data
+    
     switchView(currentView);
   } else {
-    // Show Login
+    
     DOM.authOverlay.style.display = 'flex';
     DOM.appRoot.style.display = 'none';
     if (DOM.loginForm) {
@@ -269,10 +269,10 @@ async function handleRegister(e) {
 function applyRolePermissions() {
   const role = currentUser.role;
   
-  // Hide settings/nav links if needed
+  
   const managerOnlyElements = document.querySelectorAll('.manager-only');
   const adminOnlyElements = document.querySelectorAll('.admin-only');
-  const staffOnlyElements = document.querySelectorAll('.staff-only'); // Admin + Manager
+  const staffOnlyElements = document.querySelectorAll('.staff-only'); 
   
   if (role === 'tenant') {
     managerOnlyElements.forEach(el => el.style.display = 'none');
@@ -292,11 +292,11 @@ function applyRolePermissions() {
   }
 }
 
-// -------------------------------------------------------------
-// ROUTING / VIEW SWITCHER
-// -------------------------------------------------------------
+
+
+
 async function switchView(viewName) {
-  // Route Guard: Tenants should not have access to Tenants or Users view
+  
   if (currentUser && currentUser.role === 'tenant' && (viewName === 'tenants' || viewName === 'users')) {
     switchView('dashboard');
     return;
@@ -304,7 +304,7 @@ async function switchView(viewName) {
 
   currentView = viewName;
   
-  // Update Navigation Active State
+  
   DOM.navItems.forEach(item => {
     if (item.getAttribute('data-view') === viewName) {
       item.classList.add('active');
@@ -313,7 +313,7 @@ async function switchView(viewName) {
     }
   });
   
-  // Show/Hide view divs
+  
   Object.keys(DOM.views).forEach(name => {
     if (DOM.views[name]) {
       if (name === viewName) {
@@ -324,10 +324,10 @@ async function switchView(viewName) {
     }
   });
   
-  // Update Header Title & Action buttons context
+  
   DOM.topbarTitle.textContent = viewName.charAt(0).toUpperCase() + viewName.slice(1);
   
-  // Load data for view
+  
   if (viewName === 'dashboard') {
     await loadDashboardData();
   } else if (viewName === 'properties') {
@@ -351,14 +351,14 @@ async function switchView(viewName) {
   }
 }
 
-// -------------------------------------------------------------
-// VIEW 1: DASHBOARD
-// -------------------------------------------------------------
+
+
+
 async function loadDashboardData() {
   try {
     const role = currentUser.role;
     
-    // Toggle role container dashboards
+    
     const adminDashboard = document.getElementById('dashboard-admin-manager');
     const tenantDashboard = document.getElementById('dashboard-tenant');
     
@@ -368,7 +368,7 @@ async function loadDashboardData() {
       
       const data = await api.getDashboardData(role);
       
-      // Populate KPI values
+      
       document.getElementById('kpi-total-properties').textContent = data.kpi.totalProperties;
       document.getElementById('kpi-occupancy').textContent = data.kpi.occupancyRate;
       document.getElementById('kpi-rent-collected').textContent = data.kpi.rentCollected;
@@ -376,10 +376,10 @@ async function loadDashboardData() {
       document.getElementById('kpi-open-tickets').textContent = data.kpi.openTickets;
       document.getElementById('kpi-urgent-tickets').textContent = `${data.kpi.urgentTickets} urgent`;
       
-      // Render Properties list tab (default 'all')
+      
       renderDashboardProperties('all');
       
-      // Render Rent Due
+      
       const dueList = document.getElementById('due-rents-list');
       dueList.innerHTML = '';
       if (data.dueRents.length === 0) {
@@ -402,7 +402,7 @@ async function loadDashboardData() {
         });
       }
       
-      // Render Maintenance list
+      
       const tickets = await api.getMaintenanceTickets();
       const maintList = document.getElementById('dashboard-maint-list');
       maintList.innerHTML = '';
@@ -436,7 +436,7 @@ async function loadDashboardData() {
         });
       }
 
-      // Render chart collection bars
+      
       const bars = document.querySelectorAll('.bar-chart .bar');
       data.collectionTrend.forEach((height, i) => {
         if (bars[i]) {
@@ -444,7 +444,7 @@ async function loadDashboardData() {
         }
       });
       
-      // Render Recent activity logs
+      
       const actList = document.getElementById('recent-activity-list');
       actList.innerHTML = '';
       data.recentActivity.forEach(act => {
@@ -473,7 +473,7 @@ async function loadDashboardData() {
       
       const data = await api.getDashboardData(role);
       
-      // Populate Lease Summary Card
+      
       const leaseCard = document.getElementById('tenant-lease-card');
       if (data.lease) {
         leaseCard.innerHTML = `
@@ -502,7 +502,7 @@ async function loadDashboardData() {
           </div>
         `;
 
-        // Attach listener to Cancel Contract button
+        
         const cancelLeaseBtn = leaseCard.querySelector('.btn-cancel-lease');
         if (cancelLeaseBtn) {
           cancelLeaseBtn.addEventListener('click', async () => {
@@ -522,7 +522,7 @@ async function loadDashboardData() {
         leaseCard.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-secondary)">No active lease agreement found.</div>';
       }
       
-      // Populate contacts card
+      
       const contactsList = document.getElementById('tenant-contacts-list');
       if (contactsList && data.contacts) {
         contactsList.innerHTML = `
@@ -545,7 +545,7 @@ async function loadDashboardData() {
         `;
       }
 
-      // Next Due Payment Highlight
+      
       const payHighlight = document.getElementById('tenant-payment-highlight');
       if (data.nextPayment) {
         payHighlight.innerHTML = `
@@ -563,7 +563,7 @@ async function loadDashboardData() {
         `;
       }
       
-      // Tenant Payment History
+      
       const payList = document.getElementById('tenant-payment-list');
       payList.innerHTML = '';
       if (data.payments.length === 0) {
@@ -586,7 +586,7 @@ async function loadDashboardData() {
         });
       }
       
-      // Tenant Maintenance Requests
+      
       const tenantMaintList = document.getElementById('tenant-maint-list');
       tenantMaintList.innerHTML = '';
       if (data.maintenanceTickets.length === 0) {
@@ -617,7 +617,7 @@ async function loadDashboardData() {
   }
 }
 
-// Render property cards on Dashboard Left Panel (filtered: all, occupied, vacant)
+
 async function renderDashboardProperties(filter = 'all') {
   const container = document.getElementById('dashboard-properties-list');
   if (!container) return;
@@ -682,9 +682,9 @@ async function renderDashboardProperties(filter = 'all') {
   }
 }
 
-// -------------------------------------------------------------
-// VIEW 2: PROPERTIES (CRUD SCREEN)
-// -------------------------------------------------------------
+
+
+
 async function renderPropertiesList(searchTerm = '') {
   const container = document.getElementById('properties-grid-container');
   if (!container) return;
@@ -714,7 +714,7 @@ async function renderPropertiesList(searchTerm = '') {
       if (p.status === 'occupied') statusBadgeClass = 'status-occupied';
       else if (p.status === 'maintenance') statusBadgeClass = 'status-maintenance';
       
-      // Actions controls markup (only visible to staff/manager/admin)
+      
       let actionsHtml = '';
       if (currentUser.role !== 'tenant') {
         actionsHtml = `
@@ -750,7 +750,7 @@ async function renderPropertiesList(searchTerm = '') {
         ${actionsHtml}
       `;
       
-      // Attach listeners to newly created action buttons
+      
       if (currentUser.role !== 'tenant') {
         card.querySelector('.btn-edit-prop').addEventListener('click', () => openPropertyModal(p.id));
         card.querySelector('.btn-delete-prop').addEventListener('click', () => handlePropertyDelete(p.id));
@@ -776,7 +776,7 @@ function openPropertyModal(propertyId = null) {
     modalTitle.textContent = 'Edit Property Details';
     propIdInput.value = propertyId;
     
-    // Fetch property details to populate form
+    
     api.getProperty(propertyId).then(p => {
       document.getElementById('prop-title').value = p.title;
       document.getElementById('prop-address').value = p.address;
@@ -844,9 +844,9 @@ async function handlePropertyDelete(id) {
   }
 }
 
-// -------------------------------------------------------------
-// VIEW 3: TENANTS (CRUD SCREEN)
-// -------------------------------------------------------------
+
+
+
 async function renderTenantsList() {
   const tableBody = document.getElementById('tenants-table-body');
   if (!tableBody) return;
@@ -874,7 +874,7 @@ async function renderTenantsList() {
     }
     
     tenants.forEach(t => {
-      // Find current agreement and property
+      
       const activeAgr = agreements.find(a => a.tenant_id === t.id && a.status === 'active');
       let propertyName = 'Unassigned';
       if (activeAgr) {
@@ -971,9 +971,9 @@ async function handleTenantSubmit(e) {
   }
 }
 
-// -------------------------------------------------------------
-// VIEW 4: AGREEMENTS
-// -------------------------------------------------------------
+
+
+
 async function renderAgreementsList() {
   const tableBody = document.getElementById('agreements-table-body');
   if (!tableBody) return;
@@ -1000,7 +1000,7 @@ async function renderAgreementsList() {
       return;
     }
     
-    // Sort active first
+    
     list.sort((a, b) => (a.status === 'active' ? -1 : 1));
     
     list.forEach(a => {
@@ -1056,7 +1056,7 @@ async function openAgreementModal() {
   tenantSelect.innerHTML = '<option value="">-- Loading Tenants --</option>';
   
   try {
-    // 1. Populate vacant properties dropdown
+    
     const props = await api.getProperties();
     const vacantProps = props.filter(p => p.status === 'vacant');
     
@@ -1069,20 +1069,20 @@ async function openAgreementModal() {
       });
     }
     
-    // 2. Populate tenants dropdown
+    
     const tenants = await api.getTenants();
     tenantSelect.innerHTML = '<option value="">Select a tenant...</option>';
     tenants.forEach(t => {
       tenantSelect.innerHTML += `<option value="${t.id}">${t.name} (${t.email})</option>`;
     });
     
-    // Auto-calculate rent fill on property select
+    
     propSelect.addEventListener('change', (e) => {
       const selectedId = e.target.value;
       const selectedProp = props.find(p => p.id === selectedId);
       if (selectedProp) {
         document.getElementById('agreement-rent').value = selectedProp.rent_amount;
-        document.getElementById('agreement-deposit').value = selectedProp.rent_amount * 2; // Default 2 mo deposit
+        document.getElementById('agreement-deposit').value = selectedProp.rent_amount * 2; 
       }
     });
     
@@ -1131,9 +1131,9 @@ async function handleAgreementTerminate(id) {
   }
 }
 
-// -------------------------------------------------------------
-// VIEW 5: PAYMENTS
-// -------------------------------------------------------------
+
+
+
 async function renderPaymentsList() {
   const tableBody = document.getElementById('payments-table-body');
   if (!tableBody) return;
@@ -1152,7 +1152,7 @@ async function renderPaymentsList() {
       return;
     }
     
-    // Sort pending and overdue first, then by date descending
+    
     list.sort((a, b) => {
       if (a.status !== 'paid' && b.status === 'paid') return -1;
       if (a.status === 'paid' && b.status !== 'paid') return 1;
@@ -1230,9 +1230,9 @@ async function handlePaymentSubmit(e) {
   }
 }
 
-// -------------------------------------------------------------
-// VIEW 6: SETTINGS
-// -------------------------------------------------------------
+
+
+
 function loadSettingsData() {
   const details = document.getElementById('settings-profile-details');
   if (!details) return;
@@ -1288,9 +1288,9 @@ function loadSettingsData() {
   });
 }
 
-// -------------------------------------------------------------
-// HELPER FUNCTIONS
-// -------------------------------------------------------------
+
+
+
 function closeAllModals() {
   Object.keys(DOM.modals).forEach(name => {
     if (DOM.modals[name]) {
@@ -1324,9 +1324,9 @@ function formatDateShort(dateStr) {
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
-// -------------------------------------------------------------
-// VIEW 7: USERS (ADMIN USER MANAGEMENT)
-// -------------------------------------------------------------
+
+
+
 async function renderUsersList() {
   const tableBody = document.getElementById('users-table-body');
   if (!tableBody) return;
@@ -1411,9 +1411,9 @@ async function handleUserToggleStatus(id) {
   }
 }
 
-// -------------------------------------------------------------
-// VIEW 8: BOOKING REQUESTS SYSTEM (Tenant & Manager Stories)
-// -------------------------------------------------------------
+
+
+
 function openBookingModal(propertyId, propertyTitle) {
   const form = DOM.forms.booking;
   form.reset();

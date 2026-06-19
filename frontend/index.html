@@ -4,19 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PropManager — Premium Rental Management Suite</title>
-  <!-- Google Fonts -->
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- Tabler Icons CSS CDN -->
+  
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-  <!-- Core Stylesheet -->
+  
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- ========================================== -->
-  <!-- AUTHENTICATION OVERLAY LAYER               -->
-  <!-- ========================================== -->
+  
+  
+  
   <div class="auth-container" id="auth-overlay">
     <div class="auth-card">
       <div class="auth-header">
@@ -25,7 +25,7 @@
         <p class="auth-subtitle">Rental Suite System Login</p>
       </div>
 
-      <!-- Quick Role Selector for Evaluation/Mock Testing -->
+      
       <div class="role-select-box">
         <div class="role-select-title">Quick Role Selector (Mock Mode)</div>
         <div class="role-btn-group">
@@ -35,7 +35,7 @@
         </div>
       </div>
 
-      <!-- Login Form -->
+      
       <form id="login-form" autocomplete="on">
         <div class="form-group">
           <label class="form-label" for="login-email">Email Address</label>
@@ -51,7 +51,7 @@
         </p>
       </form>
 
-      <!-- Register Form (Initially Hidden) -->
+      
       <form id="register-form" style="display: none;" autocomplete="on">
         <div class="form-group">
           <label class="form-label" for="register-name">Full Name</label>
@@ -80,12 +80,12 @@
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- MAIN APPLICATION SHELL                     -->
-  <!-- ========================================== -->
+  
+  
+  
   <div class="prm-root" id="app-root" style="display: none;">
     
-    <!-- SIDEBAR -->
+    
     <div class="sidebar" id="sidebar">
       <div class="sidebar-logo">
         <div class="logo-mark">
@@ -114,7 +114,7 @@
         <div class="nav-item" data-view="settings"><i class="ti ti-settings" aria-hidden="true"></i> Profile</div>
       </div>
 
-      <!-- Sidebar Bottom Profile Chip -->
+      
       <div class="sidebar-bottom">
         <div class="user-chip" id="logout-btn" title="Click to logout">
           <div class="avatar" id="user-avatar-display">RK</div>
@@ -127,10 +127,10 @@
       </div>
     </div>
 
-    <!-- MAIN PANEL -->
+    
     <div class="main">
       
-      <!-- TOP BAR -->
+      
       <div class="topbar">
         <div class="topbar-title" id="topbar-title">Dashboard</div>
         
@@ -142,17 +142,17 @@
         <button class="topbar-btn primary" id="add-property-btn"><i class="ti ti-plus" aria-hidden="true"></i> Add property</button>
       </div>
 
-      <!-- DYNAMIC ROUTED CONTENT AREA -->
+      
       <div class="content">
 
-        <!-- ========================================== -->
-        <!-- VIEW 1: DASHBOARD                          -->
-        <!-- ========================================== -->
+        
+        
+        
         <div class="view-section active" id="view-dashboard">
           
-          <!-- SUB-VIEW A: ADMIN & MANAGER DASHBOARD -->
+          
           <div id="dashboard-admin-manager">
-            <!-- KPI ROW -->
+            
             <div class="kpi-row">
               <div class="kpi-card">
                 <div class="kpi-label"><i class="ti ti-building-estate" aria-hidden="true"></i> Total properties</div>
@@ -176,9 +176,9 @@
               </div>
             </div>
 
-            <!-- TWO COLUMN PANELS -->
+            
             <div class="two-col">
-              <!-- LEFT COLUMN: PROPERTIES -->
+              
               <div>
                 <div class="section-header">
                   <div class="section-title">Property Portfolio Summary</div>
@@ -188,41 +188,41 @@
                     <div class="tab" data-filter="vacant">Vacant</div>
                   </div>
                 </div>
-                <!-- Properties Mini List -->
+                
                 <div class="list-wrapper" id="dashboard-properties-list">
-                  <!-- JS Dynamic Render -->
+                  
                 </div>
               </div>
 
-              <!-- RIGHT COLUMN: DUE RENTS & TICKETS -->
+              
               <div class="right-panel">
-                <!-- Due Rents Card -->
+                
                 <div class="mini-card">
                   <div class="section-header" style="margin-bottom:12px">
                     <div class="section-title">Rent Due Soon</div>
                     <div class="section-link" onclick="switchView('payments')">Ledger <i class="ti ti-chevron-right" aria-hidden="true"></i></div>
                   </div>
                   <div id="due-rents-list">
-                    <!-- JS Dynamic Render -->
+                    
                   </div>
                 </div>
 
-                <!-- Maintenance Card -->
+                
                 <div class="mini-card">
                   <div class="section-header" style="margin-bottom:12px">
                     <div class="section-title">Maintenance Tickets</div>
                     <div class="section-link">Open requests</div>
                   </div>
                   <div id="dashboard-maint-list">
-                    <!-- JS Dynamic Render -->
+                    
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- BOTTOM ROW: CHARTS & LOGS -->
+            
             <div class="bottom-row">
-              <!-- Monthly Rent collection trend chart -->
+              
               <div class="card">
                 <div class="section-header">
                   <div class="section-title">Rent Collection Trend — 2026</div>
@@ -259,44 +259,44 @@
                 </div>
               </div>
 
-              <!-- Activity logs -->
+              
               <div class="card">
                 <div class="section-header">
                   <div class="section-title">System Activity Log</div>
                 </div>
                 <div id="recent-activity-list" style="display:flex; flex-direction:column; gap:6px;">
-                  <!-- JS Dynamic Render -->
+                  
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- SUB-VIEW B: TENANT PERSONAL DASHBOARD -->
+          
           <div id="dashboard-tenant" style="display: none;">
             <div class="two-col">
-              <!-- Lease Terms Card -->
+              
               <div class="card">
                 <div class="section-header">
                   <div class="section-title">My Lease Terms & Agreement</div>
                 </div>
                 <div id="tenant-lease-card">
-                  <!-- JS Dynamic Render -->
+                  
                 </div>
               </div>
 
-              <!-- Payment Highlight Box -->
+              
               <div class="right-panel">
                 <div class="mini-card" id="tenant-payment-highlight" style="background: var(--bg-primary); border-top: 4px solid var(--primary);">
-                  <!-- JS Dynamic Render -->
+                  
                 </div>
                 
-                <!-- Contacts & Support Card -->
+                
                 <div class="mini-card" id="tenant-contacts-card">
                   <div class="section-header">
                     <div class="section-title">Contacts & Support</div>
                   </div>
                   <div id="tenant-contacts-list" style="display: flex; flex-direction: column; gap: 12px;">
-                    <!-- JS Dynamic Render -->
+                    
                   </div>
                 </div>
                 
@@ -305,13 +305,13 @@
                     <div class="section-title">My Tickets</div>
                   </div>
                   <div id="tenant-maint-list">
-                    <!-- JS Dynamic Render -->
+                    
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Rent Payment History Table -->
+            
             <div class="card">
               <div class="section-header">
                 <div class="section-title">Lease Rent Payments Ledger</div>
@@ -327,7 +327,7 @@
                     </tr>
                   </thead>
                   <tbody id="tenant-payment-list">
-                    <!-- JS Dynamic Render -->
+                    
                   </tbody>
                 </table>
               </div>
@@ -336,29 +336,29 @@
 
         </div>
 
-        <!-- ========================================== -->
-        <!-- VIEW 2: PROPERTIES (CRUD GRID)             -->
-        <!-- ========================================== -->
+        
+        
+        
         <div class="view-section" id="view-properties">
           <div class="actions-bar">
             <div class="filters-wrap">
-              <!-- Dynamic Filter could go here -->
+              
             </div>
           </div>
           
           <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;" id="properties-grid-container">
-            <!-- JS Dynamic Render -->
+            
           </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- VIEW 3: TENANTS (LIST TABLE)               -->
-        <!-- ========================================== -->
+        
+        
+        
         <div class="view-section" id="view-tenants">
           <div class="actions-bar">
             <div></div>
             <div id="tenants-actions-wrap">
-              <!-- JS Render Add Button based on Role -->
+              
             </div>
           </div>
           
@@ -375,16 +375,16 @@
                   </tr>
                 </thead>
                 <tbody id="tenants-table-body">
-                  <!-- JS Dynamic Render -->
+                  
                 </tbody>
               </table>
             </div>
           </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- VIEW 4: AGREEMENTS (LIST TABLE)            -->
-        <!-- ========================================== -->
+        
+        
+        
         <div class="view-section" id="view-agreements">
           <div class="actions-bar">
             <div class="tab-row" id="agreements-tabs" style="margin-bottom: 0;">
@@ -392,11 +392,11 @@
               <div class="tab" data-tab="bookings">Booking Requests <span id="booking-requests-badge" class="nav-badge" style="display: none; position: static; margin-left: 6px; padding: 1px 6px;">0</span></div>
             </div>
             <div id="agreements-actions-wrap">
-              <!-- JS Render Add Button based on Role -->
+              
             </div>
           </div>
           
-          <!-- LEASE AGREEMENTS CONTAINER -->
+          
           <div class="card" id="lease-agreements-container">
             <div class="table-responsive">
               <table class="table">
@@ -412,13 +412,13 @@
                   </tr>
                 </thead>
                 <tbody id="agreements-table-body">
-                  <!-- JS Dynamic Render -->
+                  
                 </tbody>
               </table>
             </div>
           </div>
 
-          <!-- BOOKING REQUESTS CONTAINER (HIDDEN BY DEFAULT) -->
+          
           <div class="card" id="booking-requests-container" style="display: none;">
             <div class="table-responsive">
               <table class="table">
@@ -433,16 +433,16 @@
                   </tr>
                 </thead>
                 <tbody id="booking-requests-table-body">
-                  <!-- JS Dynamic Render -->
+                  
                 </tbody>
               </table>
             </div>
           </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- VIEW 5: PAYMENTS (LEDGER TABLE)            -->
-        <!-- ========================================== -->
+        
+        
+        
         <div class="view-section" id="view-payments">
           <div class="card">
             <div class="table-responsive">
@@ -459,25 +459,25 @@
                   </tr>
                 </thead>
                 <tbody id="payments-table-body">
-                  <!-- JS Dynamic Render -->
+                  
                 </tbody>
               </table>
             </div>
           </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- VIEW 6: SETTINGS (PROFILE CARD)            -->
-        <!-- ========================================== -->
+        
+        
+        
         <div class="view-section" id="view-settings">
           <div id="settings-profile-details">
-            <!-- JS Dynamic Render -->
+            
           </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- VIEW 7: USERS (ADMIN USER MANAGEMENT)      -->
-        <!-- ========================================== -->
+        
+        
+        
         <div class="view-section" id="view-users">
           <div class="actions-bar">
             <div></div>
@@ -500,7 +500,7 @@
                   </tr>
                 </thead>
                 <tbody id="users-table-body">
-                  <!-- JS Dynamic Render -->
+                  
                 </tbody>
               </table>
             </div>
@@ -511,11 +511,11 @@
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- MODALS SECTION                             -->
-  <!-- ========================================== -->
+  
+  
+  
 
-  <!-- Modal 1: Property CRUD Form -->
+  
   <div class="modal-overlay" id="modal-property">
     <div class="modal">
       <div class="modal-header">
@@ -587,7 +587,7 @@
     </div>
   </div>
 
-  <!-- Modal 2: Tenant CRUD Form -->
+  
   <div class="modal-overlay" id="modal-tenant">
     <div class="modal">
       <div class="modal-header">
@@ -622,7 +622,7 @@
     </div>
   </div>
 
-  <!-- Modal 3: Lease Agreement Create Form -->
+  
   <div class="modal-overlay" id="modal-agreement">
     <div class="modal">
       <div class="modal-header">
@@ -634,13 +634,13 @@
           <div class="form-group">
             <label class="form-label" for="agreement-property-id">Select Vacant Property</label>
             <select id="agreement-property-id" class="form-control" required>
-              <!-- JS Dynamic list -->
+              
             </select>
           </div>
           <div class="form-group">
             <label class="form-label" for="agreement-tenant-id">Select Tenant Signee</label>
             <select id="agreement-tenant-id" class="form-control" required>
-              <!-- JS Dynamic list -->
+              
             </select>
           </div>
           <div class="form-row">
@@ -672,7 +672,7 @@
     </div>
   </div>
 
-  <!-- Modal 4: Record Rent Payment Form -->
+  
   <div class="modal-overlay" id="modal-payment">
     <div class="modal" style="max-width: 400px">
       <div class="modal-header">
@@ -703,7 +703,7 @@
     </div>
   </div>
 
-  <!-- Modal 5: Add User Account Form -->
+  
   <div class="modal-overlay" id="modal-user">
     <div class="modal">
       <div class="modal-header">
@@ -743,7 +743,7 @@
     </div>
   </div>
 
-  <!-- Modal 6: Book Property Form -->
+  
   <div class="modal-overlay" id="modal-booking">
     <div class="modal" style="max-width: 400px">
       <div class="modal-header">
@@ -771,13 +771,13 @@
     </div>
   </div>
 
-  <!-- Toast Notification element -->
+  
   <div class="toast" id="toast">
     <i class="ti ti-info-circle" aria-hidden="true" style="font-size: 16px;"></i>
     <span id="toast-message">Notification message here</span>
   </div>
 
-  <!-- Core App Controller Script (ES6 Module) -->
+  
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

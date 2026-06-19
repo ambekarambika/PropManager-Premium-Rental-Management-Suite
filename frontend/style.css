@@ -1,8 +1,8 @@
-/* STYLE.CSS - Property Rental Management System Frontend */
+
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Color Palette (Harmonious Cool Slates & Vibrant Accents) */
+  
   --primary: #FF6B35;
   --primary-hover: #E85A24;
   --primary-light: #FF6B3512;
@@ -19,7 +19,7 @@
   --border-secondary: #CBD5E1;
   --border-tertiary: #F1F5F9;
   
-  /* Status Colors */
+  
   --success: #3B6D11;
   --success-bg: #EAF3DE;
   --success-dot: #639922;
@@ -32,11 +32,11 @@
   --danger-bg: #FCEBEB;
   --danger-dot: #E24B4A;
 
-  /* Typography */
+  
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-heading: 'Outfit', sans-serif;
 
-  /* Borders & Shadows */
+  
   --radius-lg: 16px;
   --radius-md: 10px;
   --radius-sm: 6px;
@@ -46,7 +46,7 @@
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Base Resets */
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -78,7 +78,7 @@ button, input, select, textarea {
   border: 0;
 }
 
-/* APP ROOT CONTAINER */
+
 .prm-root {
   display: flex;
   height: 100vh;
@@ -86,7 +86,7 @@ button, input, select, textarea {
   overflow: hidden;
 }
 
-/* SIDEBAR styling */
+
 .sidebar {
   width: 240px;
   min-width: 240px;
@@ -251,7 +251,7 @@ button, input, select, textarea {
   text-transform: capitalize;
 }
 
-/* MAIN PANEL CONTENT */
+
 .main {
   flex: 1;
   display: flex;
@@ -260,7 +260,7 @@ button, input, select, textarea {
   background: var(--bg-secondary);
 }
 
-/* TOP BAR */
+
 .topbar {
   background: var(--bg-primary);
   border-bottom: 1px solid var(--border-primary);
@@ -343,7 +343,7 @@ button, input, select, textarea {
   font-size: 16px;
 }
 
-/* DYNAMIC CONTENT CONTAINER */
+
 .content {
   flex: 1;
   overflow-y: auto;
@@ -363,7 +363,7 @@ button, input, select, textarea {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* KPI ROW */
+
 .kpi-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -419,7 +419,7 @@ button, input, select, textarea {
 .kpi-down { color: var(--danger); }
 .kpi-neutral { color: var(--text-secondary); }
 
-/* TWO COLUMN LAYOUT */
+
 .two-col {
   display: grid;
   grid-template-columns: 1fr 340px;
@@ -433,7 +433,7 @@ button, input, select, textarea {
   }
 }
 
-/* MAIN CARD CONTAINER */
+
 .card {
   background: var(--bg-primary);
   border: 1px solid var(--border-primary);
@@ -471,7 +471,7 @@ button, input, select, textarea {
   color: var(--primary-hover);
 }
 
-/* TAB ROW */
+
 .tab-row {
   display: flex;
   gap: 4px;
@@ -499,7 +499,7 @@ button, input, select, textarea {
   box-shadow: var(--shadow-sm);
 }
 
-/* LIST CARDS (PROPERTY CARDS) */
+
 .list-wrapper {
   display: flex;
   flex-direction: column;
@@ -623,7 +623,7 @@ button, input, select, textarea {
 .status-active { background: var(--success-bg); color: var(--success); }
 .status-deactivated { background: var(--danger-bg); color: var(--danger); }
 
-/* PULSE ANIMATION */
+
 .pulse-wrap {
   position: relative;
   display: inline-flex;
@@ -654,7 +654,7 @@ button, input, select, textarea {
   100% { transform: scale(2.5); opacity: 0; }
 }
 
-/* RIGHT SIDEBAR PANEL */
+
 .right-panel {
   display: flex;
   flex-direction: column;
@@ -669,7 +669,7 @@ button, input, select, textarea {
   box-shadow: var(--shadow-sm);
 }
 
-/* DUE RENTS */
+
 .rent-item {
   display: flex;
   align-items: center;
@@ -707,7 +707,7 @@ button, input, select, textarea {
   color: var(--text-primary);
 }
 
-/* MAINTENANCE ITEMS */
+
 .maint-item {
   display: flex;
   align-items: flex-start;
@@ -758,7 +758,7 @@ button, input, select, textarea {
 .badge-pending { background: var(--warning-bg); color: var(--warning); }
 .badge-done { background: var(--success-bg); color: var(--success); }
 
-/* BOTTOM ROW (CHARTS & LOGS) */
+
 .bottom-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -770,7 +770,7 @@ button, input, select, textarea {
   }
 }
 
-/* COLLECTION CHART */
+
 .bar-chart {
   display: flex;
   align-items: flex-end;
@@ -806,7 +806,7 @@ button, input, select, textarea {
   font-weight: 500;
 }
 
-/* RECENT ACTIVITY */
+
 .act-item {
   display: flex;
   align-items: flex-start;
@@ -835,7 +835,7 @@ button, input, select, textarea {
   margin-top: 2px;
 }
 
-/* TABLES STYLING */
+
 .table-responsive {
   width: 100%;
   overflow-x: auto;
@@ -872,14 +872,14 @@ button, input, select, textarea {
   background: var(--bg-secondary);
 }
 
-/* GRID/FLEX UTILITIES FOR SECTIONS */
+
 .header-actions {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-/* MODALS STYLING */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -958,7 +958,7 @@ button, input, select, textarea {
   background: var(--bg-secondary);
 }
 
-/* FORM FIELDS */
+
 .form-group {
   margin-bottom: 16px;
 }
@@ -992,7 +992,7 @@ button, input, select, textarea {
   gap: 12px;
 }
 
-/* LOGIN VIEW OVERLAY */
+
 .auth-container {
   position: fixed;
   top: 0;
@@ -1083,7 +1083,7 @@ button, input, select, textarea {
   border-color: var(--primary);
 }
 
-/* TOAST / NOTIFICATION */
+
 .toast {
   position: fixed;
   bottom: 24px;
@@ -1111,7 +1111,7 @@ button, input, select, textarea {
 .toast-error { border-left: 4px solid var(--danger-dot); }
 .toast-info { border-left: 4px solid #185FA5; }
 
-/* PROPERTY DETAIL PAGE / SUB-VIEWS */
+
 .detail-grid {
   display: grid;
   grid-template-columns: 1.5fr 1fr;
@@ -1143,7 +1143,7 @@ button, input, select, textarea {
   gap: 4px;
 }
 
-/* ACTIONS BAR */
+
 .actions-bar {
   display: flex;
   align-items: center;

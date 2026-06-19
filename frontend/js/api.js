@@ -1,12 +1,12 @@
-/* js/api.js - API client module with mock data fallback and scoping rules */
 
-const API_BASE_URL = 'http://localhost:8000/api';
-const USE_MOCK = true; // Set to false to connect to your live Python backend
 
-// Utility to simulate network delay when in mock mode
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
+const USE_MOCK = false;
+
+
 const sleep = (ms = 200) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Retrieve headers with JWT authorization token if available
+
 function getHeaders() {
   const token = localStorage.getItem('token');
   const headers = {
@@ -18,9 +18,9 @@ function getHeaders() {
   return headers;
 }
 
-// -------------------------------------------------------------
-// IN-MEMORY MOCK DATABASE INITIALIZATION
-// -------------------------------------------------------------
+
+
+
 const defaultMockDB = {
   users: [
     { id: 'user-admin', name: 'Super Admin', email: 'admin@example.com', role: 'admin', phone: '+91 99999 88888', status: 'active' },
@@ -70,7 +70,7 @@ const defaultMockDB = {
   bookingRequests: []
 };
 
-// Check if database exists in localStorage, otherwise set default
+
 if (!localStorage.getItem('prm_db')) {
   localStorage.setItem('prm_db', JSON.stringify(defaultMockDB));
 }
@@ -83,15 +83,15 @@ function saveMockDB(db) {
   localStorage.setItem('prm_db', JSON.stringify(db));
 }
 
-// Get the current user cache locally
+
 function getCachedUser() {
   const userStr = localStorage.getItem('currentUser');
   return userStr ? JSON.parse(userStr) : null;
 }
 
-// -------------------------------------------------------------
-// AUTHENTICATION API
-// -------------------------------------------------------------
+
+
+
 export async function login(email, password) {
   if (USE_MOCK) {
     await sleep();
@@ -194,14 +194,14 @@ export function logout() {
   localStorage.removeItem('currentUser');
 }
 
-// -------------------------------------------------------------
-// USER MANAGEMENT API (Admin Stories - Secured)
-// -------------------------------------------------------------
+
+
+
 export async function getUsers() {
   if (USE_MOCK) {
     await sleep();
     const db = getMockDB();
-    // Enforce Admin only
+
     const user = getCachedUser();
     if (!user || user.role !== 'admin') {
       throw new Error('Access denied: Admin permissions required');
@@ -220,12 +220,12 @@ export async function createAdminUser(userData) {
   if (USE_MOCK) {
     await sleep();
     const db = getMockDB();
-    // Enforce Admin only
+
     const user = getCachedUser();
     if (!user || user.role !== 'admin') {
       throw new Error('Access denied: Admin permissions required');
     }
-    
+
     if (db.users.find(u => u.email.toLowerCase() === userData.email.toLowerCase())) {
       throw new Error('User email already exists');
     }
@@ -238,7 +238,7 @@ export async function createAdminUser(userData) {
       status: 'active'
     };
     db.users.push(newUser);
-    
+
     if (userData.role === 'tenant') {
       db.tenants.push({
         id: `tenant-${Date.now()}`,
@@ -250,7 +250,7 @@ export async function createAdminUser(userData) {
         id_proof_url: null
       });
     }
-    
+
     saveMockDB(db);
     return newUser;
   } else {
@@ -268,19 +268,19 @@ export async function toggleUserStatus(id) {
   if (USE_MOCK) {
     await sleep();
     const db = getMockDB();
-    // Enforce Admin only
+
     const user = getCachedUser();
     if (!user || user.role !== 'admin') {
       throw new Error('Access denied: Admin permissions required');
     }
-    
+
     const targetUser = db.users.find(u => u.id === id);
     if (!targetUser) throw new Error('User not found');
-    
+
     if (user.id === id) {
       throw new Error('Cannot deactivate your own logged-in account');
     }
-    
+
     targetUser.status = (targetUser.status === 'active') ? 'deactivated' : 'active';
     saveMockDB(db);
     return targetUser;
@@ -294,21 +294,21 @@ export async function toggleUserStatus(id) {
   }
 }
 
-// -------------------------------------------------------------
-// USER PROFILE UPDATES (Tenant Stories)
-// -------------------------------------------------------------
+
+
+
 export async function updateUserProfile(id, profileData) {
   if (USE_MOCK) {
     await sleep();
     const db = getMockDB();
-    
+
     const user = db.users.find(u => u.id === id);
     if (!user) throw new Error('User profile not found');
-    
+
     user.name = profileData.name;
     user.email = profileData.email;
     user.phone = profileData.phone;
-    
+
     if (user.role === 'tenant') {
       const tenant = db.tenants.find(t => t.user_id === id);
       if (tenant) {
@@ -318,7 +318,7 @@ export async function updateUserProfile(id, profileData) {
         tenant.emergency_contact = profileData.emergency_contact || '';
       }
     }
-    
+
     saveMockDB(db);
     localStorage.setItem('currentUser', JSON.stringify(user));
     return user;
@@ -333,22 +333,22 @@ export async function updateUserProfile(id, profileData) {
   }
 }
 
-// -------------------------------------------------------------
-// PROPERTIES API (CRUD & Scoped by Role & Status updates)
-// -------------------------------------------------------------
+
+
+
 export async function getProperties(filters = {}) {
   if (USE_MOCK) {
     await sleep();
     const db = getMockDB();
     let list = [...db.properties];
     const user = getCachedUser();
-    
-    // Managers can only see properties assigned to them
+
+
     if (user && user.role === 'manager') {
       list = list.filter(p => p.manager_id === user.id);
     }
-    
-    // Apply filters
+
+
     if (filters.status && filters.status !== 'all') {
       list = list.filter(p => p.status === filters.status);
     }
@@ -393,17 +393,17 @@ export async function createProperty(propertyData) {
       rent_amount: parseFloat(propertyData.rent_amount),
       bedrooms: propertyData.bedrooms ? parseInt(propertyData.bedrooms) : null,
       bathrooms: propertyData.bathrooms ? parseInt(propertyData.bathrooms) : null,
-      status: propertyData.status || 'vacant' // managers can assign status initially
+      status: propertyData.status || 'vacant'
     };
     db.properties.push(newProp);
-    
+
     db.activities.unshift({
       id: `act-${Date.now()}`,
       text: `New property registered: <strong>${newProp.title}</strong>`,
       time: 'Just now',
       type: 'property'
     });
-    
+
     saveMockDB(db);
     return newProp;
   } else {
@@ -423,21 +423,21 @@ export async function updateProperty(id, propertyData) {
     const db = getMockDB();
     const index = db.properties.findIndex(p => p.id === id);
     if (index === -1) throw new Error('Property not found');
-    
+
     const user = getCachedUser();
     if (user && user.role === 'manager' && db.properties[index].manager_id !== user.id) {
       throw new Error('Unauthorized to edit this property');
     }
-    
+
     db.properties[index] = {
       ...db.properties[index],
       ...propertyData,
       rent_amount: parseFloat(propertyData.rent_amount),
       bedrooms: propertyData.bedrooms ? parseInt(propertyData.bedrooms) : null,
       bathrooms: propertyData.bathrooms ? parseInt(propertyData.bathrooms) : null,
-      status: propertyData.status // save the status chosen by manager/admin
+      status: propertyData.status
     };
-    
+
     saveMockDB(db);
     return db.properties[index];
   } else {
@@ -457,17 +457,17 @@ export async function deleteProperty(id) {
     const db = getMockDB();
     const index = db.properties.findIndex(p => p.id === id);
     if (index === -1) throw new Error('Property not found');
-    
+
     const user = getCachedUser();
     if (user && user.role === 'manager' && db.properties[index].manager_id !== user.id) {
       throw new Error('Unauthorized to delete this property');
     }
-    
+
     const activeAgreement = db.agreements.find(a => a.property_id === id && a.status === 'active');
     if (activeAgreement) {
       throw new Error('Cannot delete property with active tenancy agreement');
     }
-    
+
     db.properties = db.properties.filter(p => p.id !== id);
     saveMockDB(db);
     return { success: true };
@@ -484,15 +484,15 @@ export async function deleteProperty(id) {
   }
 }
 
-// -------------------------------------------------------------
-// TENANTS API (CRUD & Scoped)
-// -------------------------------------------------------------
+
+
+
 export async function getTenants() {
   if (USE_MOCK) {
     await sleep();
     const db = getMockDB();
     const user = getCachedUser();
-    
+
     if (user && user.role === 'manager') {
       const managedPropIds = db.properties.filter(p => p.manager_id === user.id).map(p => p.id);
       const activeTenantIds = db.agreements.filter(a => managedPropIds.includes(a.property_id)).map(a => a.tenant_id);
@@ -513,7 +513,7 @@ export async function createTenant(tenantData) {
     await sleep();
     const db = getMockDB();
     const newUserId = `user-${Date.now()}`;
-    
+
     const newUser = {
       id: newUserId,
       name: tenantData.name,
@@ -523,7 +523,7 @@ export async function createTenant(tenantData) {
       status: 'active'
     };
     db.users.push(newUser);
-    
+
     const newTenant = {
       id: `tenant-${Date.now()}`,
       user_id: newUserId,
@@ -534,14 +534,14 @@ export async function createTenant(tenantData) {
       id_proof_url: tenantData.id_proof_url || null
     };
     db.tenants.push(newTenant);
-    
+
     db.activities.unshift({
       id: `act-${Date.now()}`,
       text: `New tenant onboarded: <strong>${newTenant.name}</strong>`,
       time: 'Just now',
       type: 'tenant'
     });
-    
+
     saveMockDB(db);
     return newTenant;
   } else {
@@ -561,18 +561,18 @@ export async function updateTenant(id, tenantData) {
     const db = getMockDB();
     const index = db.tenants.findIndex(t => t.id === id);
     if (index === -1) throw new Error('Tenant not found');
-    
+
     db.tenants[index] = {
       ...db.tenants[index],
       ...tenantData
     };
-    
+
     const userIndex = db.users.findIndex(u => u.id === db.tenants[index].user_id);
     if (userIndex !== -1) {
       db.users[userIndex].phone = tenantData.phone;
       db.users[userIndex].name = tenantData.name;
     }
-    
+
     saveMockDB(db);
     return db.tenants[index];
   } else {
@@ -586,18 +586,18 @@ export async function updateTenant(id, tenantData) {
   }
 }
 
-// -------------------------------------------------------------
-// TENANT BOOKING REQUESTS (Tenant Booking Story)
-// -------------------------------------------------------------
+
+
+
 export async function getBookingRequests() {
   if (USE_MOCK) {
     await sleep();
     const db = getMockDB();
     const user = getCachedUser();
     let list = db.bookingRequests || [];
-    
+
     if (user && user.role === 'manager') {
-      // Find properties managed by Rajesh
+
       const managedPropIds = db.properties.filter(p => p.manager_id === user.id).map(p => p.id);
       list = list.filter(r => managedPropIds.includes(r.property_id));
     } else if (user && user.role === 'tenant') {
@@ -622,11 +622,11 @@ export async function createBookingRequest(requestData) {
   if (USE_MOCK) {
     await sleep();
     const db = getMockDB();
-    
+
     const property = db.properties.find(p => p.id === requestData.property_id);
     if (!property) throw new Error('Property does not exist');
     if (property.status !== 'vacant') throw new Error('Property is not vacant');
-    
+
     const newRequest = {
       id: `req-${Date.now()}`,
       property_id: requestData.property_id,
@@ -638,14 +638,14 @@ export async function createBookingRequest(requestData) {
     };
     if (!db.bookingRequests) db.bookingRequests = [];
     db.bookingRequests.push(newRequest);
-    
+
     db.activities.unshift({
       id: `act-${Date.now()}`,
       text: `Tenant requested booking for <strong>${property.title}</strong>`,
       time: 'Just now',
       type: 'tenant'
     });
-    
+
     saveMockDB(db);
     return newRequest;
   } else {
@@ -666,12 +666,12 @@ export async function approveBookingRequest(id) {
     if (!db.bookingRequests) db.bookingRequests = [];
     const req = db.bookingRequests.find(r => r.id === id);
     if (!req) throw new Error('Booking request not found');
-    
+
     const property = db.properties.find(p => p.id === req.property_id);
     if (!property) throw new Error('Property not found');
     if (property.status !== 'vacant') throw new Error('Property is no longer vacant');
-    
-    // Create Active Agreement
+
+
     const newAgr = {
       id: `agr-${Date.now()}`,
       property_id: req.property_id,
@@ -684,11 +684,11 @@ export async function approveBookingRequest(id) {
       document_url: 'lease_agreement.pdf'
     };
     db.agreements.push(newAgr);
-    
-    // Set property occupied
+
+
     property.status = 'occupied';
-    
-    // Generate Rent Ledger invoice
+
+
     const dueDate = new Date();
     dueDate.setMonth(dueDate.getMonth() + 1);
     const dueDateStr = dueDate.toISOString().slice(0, 10);
@@ -701,17 +701,17 @@ export async function approveBookingRequest(id) {
       status: 'pending',
       payment_method: null
     });
-    
-    // Remove request from pending list
+
+
     db.bookingRequests = db.bookingRequests.filter(r => r.id !== id);
-    
+
     db.activities.unshift({
       id: `act-${Date.now()}`,
       text: `Booking approved for <strong>${property.title}</strong>`,
       time: 'Just now',
       type: 'agreement'
     });
-    
+
     saveMockDB(db);
     return newAgr;
   } else {
@@ -730,7 +730,7 @@ export async function deleteBookingRequest(id) {
     const db = getMockDB();
     if (!db.bookingRequests) db.bookingRequests = [];
     db.bookingRequests = db.bookingRequests.filter(r => r.id !== id);
-    
+
     saveMockDB(db);
     return { success: true };
   } else {
@@ -743,16 +743,16 @@ export async function deleteBookingRequest(id) {
   }
 }
 
-// -------------------------------------------------------------
-// RENTAL AGREEMENTS API (CRUD & Scoped & Rules)
-// -------------------------------------------------------------
+
+
+
 export async function getAgreements() {
   if (USE_MOCK) {
     await sleep();
     const db = getMockDB();
     const user = getCachedUser();
     let list = [...db.agreements];
-    
+
     if (user && user.role === 'manager') {
       const managedPropIds = db.properties.filter(p => p.manager_id === user.id).map(p => p.id);
       list = list.filter(a => managedPropIds.includes(a.property_id));
@@ -764,15 +764,15 @@ export async function getAgreements() {
         list = [];
       }
     }
-    
-    // Add calculated outstanding balance dynamically
+
+
     list = list.map(a => {
       const outstanding = db.payments
         .filter(p => p.agreement_id === a.id && p.status !== 'paid')
         .reduce((sum, p) => sum + p.amount, 0);
       return { ...a, outstanding_balance: outstanding };
     });
-    
+
     return list;
   } else {
     const res = await fetch(`${API_BASE_URL}/agreements`, {
@@ -787,24 +787,24 @@ export async function createAgreement(agreementData) {
   if (USE_MOCK) {
     await sleep();
     const db = getMockDB();
-    
+
     const property = db.properties.find(p => p.id === agreementData.property_id);
     if (!property) throw new Error('Property does not exist');
-    
+
     const user = getCachedUser();
     if (user && user.role === 'manager' && property.manager_id !== user.id) {
       throw new Error('Unauthorized to lease this property');
     }
-    
+
     if (property.status !== 'vacant') {
       throw new Error('Property is currently not vacant and cannot be leased');
     }
-    
+
     const existingActive = db.agreements.find(a => a.property_id === agreementData.property_id && a.status === 'active');
     if (existingActive) {
       throw new Error('Property already has an active agreement');
     }
-    
+
     const newAgr = {
       id: `agr-${Date.now()}`,
       property_id: agreementData.property_id,
@@ -817,13 +817,13 @@ export async function createAgreement(agreementData) {
       document_url: agreementData.document_url || 'lease_agreement.pdf'
     };
     db.agreements.push(newAgr);
-    
+
     property.status = 'occupied';
-    
+
     const dueDate = new Date();
     dueDate.setMonth(dueDate.getMonth() + 1);
     const dueDateStr = dueDate.toISOString().slice(0, 10);
-    
+
     db.payments.push({
       id: `pay-${Date.now()}`,
       agreement_id: newAgr.id,
@@ -833,7 +833,7 @@ export async function createAgreement(agreementData) {
       status: 'pending',
       payment_method: null
     });
-    
+
     const tenant = db.tenants.find(t => t.id === newAgr.tenant_id);
     db.activities.unshift({
       id: `act-${Date.now()}`,
@@ -841,7 +841,7 @@ export async function createAgreement(agreementData) {
       time: 'Just now',
       type: 'agreement'
     });
-    
+
     saveMockDB(db);
     return newAgr;
   } else {
@@ -864,33 +864,33 @@ export async function terminateAgreement(id) {
     const db = getMockDB();
     const agreement = db.agreements.find(a => a.id === id);
     if (!agreement) throw new Error('Agreement not found');
-    
+
     const property = db.properties.find(p => p.id === agreement.property_id);
     const user = getCachedUser();
     const tenant = db.tenants.find(t => t.user_id === user.id);
-    
-    // Tenant associated with agreement or manager/admin can terminate
+
+
     const isAdmin = user && user.role === 'admin';
     const isManager = user && user.role === 'manager' && property && property.manager_id === user.id;
     const isTenantSignee = tenant && agreement.tenant_id === tenant.id;
-    
+
     if (!isAdmin && !isManager && !isTenantSignee) {
       throw new Error('Unauthorized to cancel this lease contract');
     }
-    
+
     agreement.status = 'terminated';
-    
+
     if (property) {
       property.status = 'vacant';
     }
-    
+
     db.activities.unshift({
       id: `act-${Date.now()}`,
       text: `Agreement cancelled for <strong>${property ? property.title : 'Property'}</strong>`,
       time: 'Just now',
       type: 'agreement'
     });
-    
+
     saveMockDB(db);
     return agreement;
   } else {
@@ -903,33 +903,33 @@ export async function terminateAgreement(id) {
   }
 }
 
-// -------------------------------------------------------------
-// PAYMENTS API (CRUD & Scoped)
-// -------------------------------------------------------------
+
+
+
 export async function getPayments(agreementId = null) {
   if (USE_MOCK) {
     await sleep();
     const db = getMockDB();
     const user = getCachedUser();
     let list = [...db.payments];
-    
+
     if (agreementId) {
       list = list.filter(p => p.agreement_id === agreementId);
     }
-    
-    // Scoping by Manager
+
+
     if (user && user.role === 'manager') {
       const managedPropIds = db.properties.filter(p => p.manager_id === user.id).map(p => p.id);
       const activeAgrIds = db.agreements.filter(a => managedPropIds.includes(a.property_id)).map(a => a.id);
       list = list.filter(p => activeAgrIds.includes(p.agreement_id));
     }
-    // Scoping by Tenant
+
     else if (user && user.role === 'tenant') {
       const tenant = db.tenants.find(t => t.user_id === user.id);
       const activeAgrIds = tenant ? db.agreements.filter(a => a.tenant_id === tenant.id).map(a => a.id) : [];
       list = list.filter(p => activeAgrIds.includes(p.agreement_id));
     }
-    
+
     return list;
   } else {
     const url = agreementId ? `${API_BASE_URL}/payments?agreementId=${agreementId}` : `${API_BASE_URL}/payments`;
@@ -947,19 +947,19 @@ export async function recordPayment(paymentId, paymentData) {
     const db = getMockDB();
     const payment = db.payments.find(p => p.id === paymentId);
     if (!payment) throw new Error('Payment record not found');
-    
+
     const agr = db.agreements.find(a => a.id === payment.agreement_id);
     const property = agr ? db.properties.find(x => x.id === agr.property_id) : null;
     const user = getCachedUser();
-    
+
     if (user && user.role === 'manager' && property && property.manager_id !== user.id) {
       throw new Error('Unauthorized to collect payments for this property');
     }
-    
+
     payment.status = 'paid';
     payment.payment_date = new Date().toISOString().slice(0, 10);
     payment.payment_method = paymentData.payment_method || 'UPI';
-    
+
     let tenantName = 'Tenant';
     let propTitle = 'Property';
     if (agr) {
@@ -967,14 +967,14 @@ export async function recordPayment(paymentId, paymentData) {
       if (tenant) tenantName = tenant.name;
       if (property) propTitle = property.title;
     }
-    
+
     db.activities.unshift({
       id: `act-${Date.now()}`,
       text: `Rent received from <strong>${tenantName}</strong> (${propTitle}) — ₹${payment.amount.toLocaleString('en-IN')}`,
       time: 'Just now',
       type: 'payment'
     });
-    
+
     saveMockDB(db);
     return payment;
   } else {
@@ -1005,16 +1005,16 @@ export async function getOutstandingBalance(agreementId) {
   }
 }
 
-// -------------------------------------------------------------
-// MAINTENANCE TICKETS API (Scoped)
-// -------------------------------------------------------------
+
+
+
 export async function getMaintenanceTickets() {
   if (USE_MOCK) {
     await sleep();
     const db = getMockDB();
     const user = getCachedUser();
     let list = [...db.maintenance];
-    
+
     if (user && user.role === 'manager') {
       const managedPropIds = db.properties.filter(p => p.manager_id === user.id).map(p => p.id);
       list = list.filter(m => managedPropIds.includes(m.property_id));
@@ -1058,31 +1058,31 @@ export async function createMaintenanceTicket(ticketData) {
   }
 }
 
-// -------------------------------------------------------------
-// DASHBOARD ANALYTICS API
-// -------------------------------------------------------------
+
+
+
 export async function getDashboardData(role) {
   if (USE_MOCK) {
     await sleep();
     const db = getMockDB();
-    
+
     if (role === 'admin') {
       const totalProps = db.properties.length;
       const occupiedProps = db.properties.filter(p => p.status === 'occupied').length;
       const occupancyPct = totalProps > 0 ? Math.round((occupiedProps / totalProps) * 100) : 0;
-      
+
       const collectedThisMonth = db.payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0);
       const pendingThisMonth = db.payments.filter(p => p.status !== 'paid').reduce((sum, p) => sum + p.amount, 0);
-      
+
       const openTickets = db.maintenance.filter(m => m.status !== 'done').length;
       const urgentTickets = db.maintenance.filter(m => m.status === 'urgent').length;
-      
+
       return {
         kpi: {
           totalProperties: totalProps,
           occupancyRate: `${occupancyPct}%`,
-          rentCollected: `₹${(collectedThisMonth/100000).toFixed(1)}L`,
-          pendingRent: `₹${(pendingThisMonth/1000).toFixed(0)}K`,
+          rentCollected: `₹${(collectedThisMonth / 100000).toFixed(1)}L`,
+          pendingRent: `₹${(pendingThisMonth / 1000).toFixed(0)}K`,
           openTickets,
           urgentTickets
         },
@@ -1093,40 +1093,40 @@ export async function getDashboardData(role) {
             id: p.id,
             tenantName: tenant ? tenant.name : 'Unknown',
             dueDate: p.due_date,
-            amount: `₹${(p.amount/1000).toFixed(0)}K`,
+            amount: `₹${(p.amount / 1000).toFixed(0)}K`,
             status: p.status
           };
         }),
         recentActivity: db.activities.slice(0, 5),
         collectionTrend: [55, 60, 50, 65, 58, 70]
       };
-    } 
-    
+    }
+
     else if (role === 'manager') {
       const user = getCachedUser();
       const managedProps = db.properties.filter(p => p.manager_id === user.id);
       const totalProps = managedProps.length;
       const occupiedProps = managedProps.filter(p => p.status === 'occupied').length;
       const occupancyPct = totalProps > 0 ? Math.round((occupiedProps / totalProps) * 100) : 0;
-      
+
       const managedPropIds = managedProps.map(p => p.id);
       const activeAgrs = db.agreements.filter(a => managedPropIds.includes(a.property_id));
       const activeAgrIds = activeAgrs.map(a => a.id);
-      
+
       const managedPayments = db.payments.filter(p => activeAgrIds.includes(p.agreement_id));
       const collectedThisMonth = managedPayments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0);
       const pendingThisMonth = managedPayments.filter(p => p.status !== 'paid').reduce((sum, p) => sum + p.amount, 0);
-      
+
       const managedMaint = db.maintenance.filter(m => managedPropIds.includes(m.property_id));
       const openTickets = managedMaint.filter(m => m.status !== 'done').length;
       const urgentTickets = managedMaint.filter(m => m.status === 'urgent').length;
-      
+
       return {
         kpi: {
           totalProperties: totalProps,
           occupancyRate: `${occupancyPct}%`,
-          rentCollected: `₹${(collectedThisMonth/100000).toFixed(1)}L`,
-          pendingRent: `₹${(pendingThisMonth/1000).toFixed(0)}K`,
+          rentCollected: `₹${(collectedThisMonth / 100000).toFixed(1)}L`,
+          pendingRent: `₹${(pendingThisMonth / 1000).toFixed(0)}K`,
           openTickets,
           urgentTickets
         },
@@ -1137,32 +1137,32 @@ export async function getDashboardData(role) {
             id: p.id,
             tenantName: tenant ? tenant.name : 'Unknown',
             dueDate: p.due_date,
-            amount: `₹${(p.amount/1000).toFixed(0)}K`,
+            amount: `₹${(p.amount / 1000).toFixed(0)}K`,
             status: p.status
           };
         }),
         recentActivity: db.activities.slice(0, 4),
         collectionTrend: [55, 60, 50, 65, 58, 70]
       };
-    } 
-    
+    }
+
     else if (role === 'tenant') {
       const currentUser = getCachedUser();
       const tenantProfile = db.tenants.find(t => t.user_id === currentUser.id);
-      
+
       if (!tenantProfile) {
         return { kpi: {}, dueRents: [], recentActivity: [] };
       }
-      
+
       const activeAgr = db.agreements.find(a => a.tenant_id === tenantProfile.id && a.status === 'active');
       const prop = activeAgr ? db.properties.find(p => p.id === activeAgr.property_id) : null;
-      
+
       const payments = activeAgr ? db.payments.filter(p => p.agreement_id === activeAgr.id) : [];
       const nextDue = payments.find(p => p.status !== 'paid');
-      
+
       const maintenance = prop ? db.maintenance.filter(m => m.property_id === prop.id) : [];
-      
-      // Get assigned manager & owner contact details
+
+
       let managerName = 'Rajesh Kumar';
       let managerEmail = 'rajesh@example.com';
       let managerPhone = '+91 98765 43210';
@@ -1174,7 +1174,7 @@ export async function getDashboardData(role) {
           managerPhone = mgr.phone || '+91 98765 43210';
         }
       }
-      
+
       return {
         lease: activeAgr ? {
           id: activeAgr.id,
