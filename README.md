@@ -40,7 +40,7 @@ The project is structured as a monorepo consisting of:
 ## Project Structure
 
 ```
-New folder/
+PropManager/
 ├── backend/                       # FastAPI REST API Backend
 │   ├── routers/                   # Endpoint routers (auth, properties, agreements, payments, etc.)
 │   ├── auth.py                    # Token creation, password hashing, and encryption logic
@@ -49,6 +49,7 @@ New folder/
 │   ├── main.py                    # FastAPI entrypoint application definition
 │   ├── models.py                  # SQLAlchemy Database schema declarations (User, Property, Agreement, Payment)
 │   ├── schemas.py                 # Pydantic data serialization & validation schemas
+│   ├── seed.py                    # Database seeder to recreate tables and insert initial mock records
 │   └── test_db.py                 # Small utility to verify database connectivity
 ├── frontend/                      # Vanilla Web Client
 │   ├── js/
@@ -56,8 +57,11 @@ New folder/
 │   │   └── app.js                 # App controller coordinating event listeners, rendering views, and state
 │   ├── index.html                 # Core single-page application markup shell
 │   ├── style.css                  # Global design theme stylesheet
-│   └── property-rental-erd.mermaid# Diagram representation of the database model
+│   ├── property-rental-erd.mermaid# Diagram representation of the database model
+│   └── property-rental-management-roadmap.md # Implementation plans and feature roadmap
+├── .env                           # Local environment configuration file (Database URL, SECRET_KEY, and expirations)
 ├── requirements.txt               # Python package dependencies
+├── ui_features_backend_mapping.txt # Mapping document linking UI screens to API endpoints and DB operations
 └── PropManager.postman_collection.json # Postman API test suite
 ```
 
@@ -65,50 +69,21 @@ New folder/
 
 ## Getting Started
 
-### 1. Running the Frontend (Zero Configuration Setup)
+### 1. Mock Mode (Frontend Only)
+Double-click `frontend/index.html` (or run a local server like `npx serve`) to test all features immediately using an in-memory browser database. Use the quick-login selector on the login screen to sign in.
 
-The frontend includes an **In-Memory Mock Database** that runs inside your browser (`localStorage`). This allows you to evaluate, demo, and test every single feature immediately without setting up databases or running servers.
-
-1.  Navigate into the `frontend/` directory.
-2.  Open `index.html` in your web browser (you can double-click it, use VS Code "Live Server", or run a simple local server like `npx serve` or `python -m http.server`).
-3.  Use the **Quick Role Selector** overlay on the login screen to sign in instantly with mock accounts:
-    *   **Property Manager**: Rajesh Kumar (`rajesh@example.com` / `password`)
-    *   **Administrator**: Super Admin (`admin@example.com` / `password`)
-    *   **Tenant**: Arjun Sharma (`arjun@example.com` / `password`)
-
----
-
-### 2. Setting Up the Backend & Live API Mode
-
-If you wish to run the live Python FastAPI backend and connect the frontend to it, follow these steps:
-
-#### Backend Setup
-1.  Ensure you have **Python 3.8+** installed.
-2.  Install dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-3.  Run the FastAPI development server:
-    ```bash
-    uvicorn backend.main:app --reload
-    ```
-    The server will spin up and run on [http://localhost:8000](http://localhost:8000). The tables will automatically be created on database startup. You can view the automated OpenAPI interactive documentation at `http://localhost:8000/docs`.
-
-#### Connecting the Frontend to the Backend
-1.  Open `frontend/js/api.js` in your text editor.
-2.  Change line 4 to set `USE_MOCK` to `false`:
-    ```javascript
-    const USE_MOCK = false; // Set to false to connect to your live Python backend
-    ```
-3.  Refresh the frontend index page in the browser. It will now fire requests directly to the FastAPI server running on `http://localhost:8000`.
+### 2. Live API Mode (With Backend & DB)
+1. Configure `DATABASE_URL` and `SECRET_KEY` in `.env`.
+2. Run `pip install -r requirements.txt` to install dependencies.
+3. Seed the database with `python backend/seed.py`.
+4. Run the server: `$env:PYTHONPATH="backend"; uvicorn backend.main:app --reload`.
+5. Set `const USE_MOCK = false;` in [`frontend/js/api.js`] and open `http://localhost:8000`.
 
 ---
 
 ## Database Architecture
-
-A representation of the relationship model is defined below. The relationships are also documented in detail in the [property-rental-erd.mermaid] file:
-
-*   **Users**: Base profile container holding name, email, credentials, and access tier (`admin`, `manager`, `tenant`).
-*   **Properties**: Real estate asset entries belonging to an owner/manager, featuring standard address, pricing, and structural specifications.
-*   **Agreements**: Formal contracts linking a User (Tenant) to a specific Property over a date range. Built-in database rules guarantee that a property can have at most one active lease agreement at any point in time.
-*   **Payments**: Invoices generated relative to active lease agreements. Tracks outstanding bills and completed logs.
+See [`property-rental-erd.mermaid`] for relationship details:
+* **Users**: Accounts with roles (`admin`, `manager`, `tenant`).
+* **Properties**: Real estate asset entries.
+* **Agreements**: Lease agreements linking tenants to properties.
+* **Payments**: Invoices generated relative to active agreements.
