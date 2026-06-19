@@ -1,0 +1,154 @@
+PropManager Suite — UI Feature to Backend Mapping
+==================================================
+
+This document maps each UI feature and user action to what happens on the FastAPI backend, including API endpoints, database operations, and data state modifications.
+
+--------------------------------------------------------------------------------
+1. Tenant Registration / Sign Up
+--------------------------------------------------------------------------------
+- UI Action:
+  A new user fills out the sign-up form with name, email, phone, password, and selects the "Tenant" role.
+- Backend API:
+  `POST /api/auth/register`
+- Backend Operations:
+  - Verifies that the email does not already exist in the database.
+  - Hashes the password using `bcrypt`.
+  - Creates and commits a new record in the `users` table.
+  - Detects that the role is "tenant" and automatically creates a corresponding profile record in the `tenants` table linked by `user_id`.
+
+--------------------------------------------------------------------------------
+2. User Log In / Authentication
+--------------------------------------------------------------------------------
+- UI Action:
+  User enters their email and password and hits "Sign In".
+- Backend API:
+  `POST /api/auth/login`
+- Backend Operations:
+  - Queries the `users` table for the matching email.
+  - Verifies the hashed password using `bcrypt`.
+  - Checks if the user status is "active". If "deactivated", returns a 403 error.
+  - Generates a signed JWT token containing the user's email ("sub") and role.
+  - Returns the JWT token and user profile details to the frontend to store in local storage.
+
+--------------------------------------------------------------------------------
+3. Admin & Manager Dashboard KPIs
+--------------------------------------------------------------------------------
+- UI Action:
+  The manager/admin logs in and views the main dashboard metrics (KPI cards, due rents ledger, and recent activities).
+- Backend API:
+  `GET /api/dashboard/{role}` (where role is "admin" or "manager")
+- Backend Operations:
+  - Scopes queries by manager ID (if role is "manager") using `Property.owner_id == current_user.id`.
+  - Total Properties: Queries the count of properties.
+  - Occupancy Rate: Computes `(occupied property count / total property count) * 100`.
+  - Rent Collected: Sums the `amount` of all payments where `status == "paid"`.
+  - Pending Rent: Sums the `amount` of all payments where `status != "paid"`.
+  - Open & Urgent Tickets: Counts records in the `maintenance` table where status is not "done" and where status is "urgent".
+  - Due Rents list: Fetches up to 5 unpaid `Payment` records sorted by due date, joining with `Agreement` and `Tenant` tables to retrieve the tenant's name.
+  - Recent Activities: Dynamically constructs logs based on recently collected payments and signed lease agreements.
+
+--------------------------------------------------------------------------------
+4. Tenant Dashboard (Lease Cards & Contacts)
+--------------------------------------------------------------------------------
+- UI Action:
+  A tenant logs in and views their active lease, next payment due, and contacts.
+- Backend API:
+  `GET /api/dashboard/tenant`
+- Backend Operations:
+  - Resolves the logged-in user to their `Tenant` profile record.
+  - Queries the `agreements` table for an active agreement where `tenant_id == tenant.id` and `status == "active"`.
+  - Active Lease: Loads property details (address, city), rent, deposit, and start/end dates from the active agreement and linked property.
+  - Next Payment Due: Queries the next unpaid payment record linked to the agreement, retrieving the due date, status, and amount.
+  - Contacts Card: Returns the landlord's contact info (derived from the property manager's User profile) and the admin contact details.
+
+--------------------------------------------------------------------------------
+5. Property Registration & Management (CRUD)
+--------------------------------------------------------------------------------
+- UI Action:
+  Manager views properties, adds a new property, edits details, or deletes a property.
+- Backend APIs:
+  - List: `GET /api/properties?status={status}&search={search}`
+  - Detail: `GET /api/properties/{property_id}`
+  - Add: `POST /api/properties`
+  - Edit: `PUT /api/properties/{property_id}`
+  - Delete: `DELETE /api/properties/{property_id}`
+- Backend Operations:
+  - List: Retrieves properties from `properties` table. If search query is provided, filters by title/address. Checks roles (managers only see their properties; admins see all).
+  - Add: Creates a new `Property` record in the database. Sets default status to "vacant" and owner_id to the manager's user ID.
+  - Edit: Updates the title, description, address, city, type, bedrooms, bathrooms, rent, and status columns of the property.
+  - Delete: Removes the property record from the database (prevents deletion if an active agreement exists).
+
+--------------------------------------------------------------------------------
+6. Tenant Onboarding
+--------------------------------------------------------------------------------
+- UI Action:
+  Manager adds a new tenant by inputting their name, email, phone, and emergency contact.
+- Backend API:
+  `POST /api/tenants`
+- Backend Operations:
+  - Verifies that the email is not already registered.
+  - Creates a new account in the `users` table with role "tenant" and sets a default hashed password ("tenant123").
+  - Creates a new profile record in the `tenants` table linked to the created User ID, storing the phone and emergency contact details.
+  - Returns the combined tenant user profile details.
+
+--------------------------------------------------------------------------------
+7. Lease Agreement Signing & Terminating
+--------------------------------------------------------------------------------
+- UI Action:
+  Manager registers a new lease agreement selecting a vacant property and a tenant, or terminates a lease early.
+- Backend APIs:
+  - Sign Lease: `POST /api/agreements`
+  - Terminate Lease: `PUT /api/agreements/{agreement_id}/terminate`
+- Backend Operations:
+  - Sign Lease:
+    - Creates an `Agreement` record with status "active".
+    - Updates the property's status in the database to "occupied".
+    - Automatically calculates the first month's rent due date (30 days from sign date) and commits a new pending `Payment` ledger record.
+  - Terminate Lease:
+    - Updates the agreement status to "terminated".
+    - Sets the linked property status back to "vacant" in the database, allowing it to be booked again.
+
+--------------------------------------------------------------------------------
+8. Recording Rent Collection
+--------------------------------------------------------------------------------
+- UI Action:
+  Manager clicks the "Collect" button next to a pending or overdue rent item in the ledger and selects a payment method (UPI, Net Banking, Card).
+- Backend API:
+  `PUT /api/payments/{payment_id}`
+- Backend Operations:
+  - Locates the payment record by ID.
+  - Verifies that the manager owns the property linked to this payment ledger line.
+  - Updates payment status to "paid".
+  - Sets the current calendar date as the payment date.
+  - Stores the selected payment method.
+  - Computes the updated outstanding balance dynamically.
+
+--------------------------------------------------------------------------------
+9. Maintenance Ticket Reporting
+--------------------------------------------------------------------------------
+- UI Action:
+  Tenant reports a plumbing/electrical issue. Manager checks reported issues.
+- Backend APIs:
+  - File Request: `POST /api/maintenance`
+  - List Tickets: `GET /api/maintenance`
+- Backend Operations:
+  - File Request: Verifies that the tenant has an active lease on the property, and creates a `Maintenance` record with description, status ("pending" or "urgent"), and the reported date.
+  - List Tickets: Filters tickets based on user role (tenants only see tickets for the property they lease; managers see tickets for their managed properties).
+
+--------------------------------------------------------------------------------
+10. Property Booking Proposals
+--------------------------------------------------------------------------------
+- UI Action:
+  Tenant logs in, navigates to vacant properties, and clicks "Book Now". Manager approves or rejects the request from the "Booking Requests" page.
+- Backend APIs:
+  - Submit: `POST /api/booking-requests`
+  - Approve: `PUT /api/booking-requests/{request_id}/approve`
+  - Reject: `DELETE /api/booking-requests/{request_id}`
+- Backend Operations:
+  - Submit: Creates a pending `BookingRequest` record linked to the tenant and property.
+  - Approve: 
+    - Updates booking status to "approved".
+    - Creates an active `Agreement` record.
+    - Transitions property status to "occupied".
+    - Creates a pending first month `Payment` due in 30 days.
+  - Reject: Deletes the booking request record from the database.
