@@ -25,7 +25,7 @@ def seed_database():
         admin_user = User(
             name="Super Admin",
             email="admin@example.com",
-            hashed_password=hash_password("admin123"),
+            hashed_password=hash_password("password"),
             role="admin",
             phone="+91 99999 88888",
             status="active"
@@ -33,7 +33,7 @@ def seed_database():
         manager_user = User(
             name="Rajesh Kumar",
             email="rajesh@example.com",
-            hashed_password=hash_password("manager123"),
+            hashed_password=hash_password("password"),
             role="manager",
             phone="+91 98765 43210",
             status="active"
@@ -41,7 +41,7 @@ def seed_database():
         tenant_arjun = User(
             name="Arjun Sharma",
             email="arjun@example.com",
-            hashed_password=hash_password("tenant123"),
+            hashed_password=hash_password("password"),
             role="tenant",
             phone="+91 98765 11111",
             status="active"
@@ -49,7 +49,7 @@ def seed_database():
         tenant_priya = User(
             name="Priya Desai",
             email="priya@example.com",
-            hashed_password=hash_password("tenant123"),
+            hashed_password=hash_password("password"),
             role="tenant",
             phone="+91 98765 22222",
             status="active"
@@ -57,7 +57,7 @@ def seed_database():
         tenant_kiran = User(
             name="Kiran Nair",
             email="kiran@example.com",
-            hashed_password=hash_password("tenant123"),
+            hashed_password=hash_password("password"),
             role="tenant",
             phone="+91 98765 33333",
             status="active"
@@ -65,7 +65,7 @@ def seed_database():
         tenant_sunita = User(
             name="Sunita Rao",
             email="sunita@example.com",
-            hashed_password=hash_password("tenant123"),
+            hashed_password=hash_password("password"),
             role="tenant",
             phone="+91 98765 44444",
             status="active"
