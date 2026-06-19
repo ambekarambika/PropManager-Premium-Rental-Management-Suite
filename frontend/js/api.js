@@ -1,6 +1,6 @@
 
 
-const API_BASE_URL = 'https://propmanager-premium-rental-management.onrender.com';
+const API_BASE_URL = 'https://propmanager-premium-rental-management.onrender.com/api';
 const USE_MOCK = false;
 
 
@@ -108,7 +108,7 @@ export async function login(email, password) {
     }
     throw new Error('Invalid email or password');
   } else {
-    const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ email, password })
@@ -154,7 +154,7 @@ export async function register(name, email, password, role = 'tenant') {
     saveMockDB(db);
     return { success: true, user: newUser };
   } else {
-    const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+    const res = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ name, email, password, role })
@@ -181,7 +181,7 @@ export async function getCurrentUser() {
     }
     return cached;
   } else {
-    const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
+    const res = await fetch(`${API_BASE_URL}/auth/me`, {
       headers: getHeaders()
     });
     if (!res.ok) return null;
