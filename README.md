@@ -1,4 +1,4 @@
-# PropManager — Premium Rental Management Suite
+PropManager — Premium Rental Management Suite
 
 Welcome to **PropManager**, a premium, state-of-the-art property rental management system designed for property owners, administrators, and tenants. It features a modern, visually stunning web interface complete with high-end glassmorphism design elements, real-time interactive dashboards, a comprehensive rental ledger, lease agreements management, and a tenant booking request workflow.
 
