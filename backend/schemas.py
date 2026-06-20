@@ -169,6 +169,11 @@ class MaintenanceResponse(BaseModel):
         from_attributes = True
 
 
+class MaintenanceUpdate(BaseModel):
+    status: str
+    notes: Optional[str] = None
+
+
 class BookingRequestCreate(BaseModel):
     property_id: int
     tenant_id: int

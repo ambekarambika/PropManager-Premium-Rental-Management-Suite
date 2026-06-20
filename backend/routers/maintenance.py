@@ -5,7 +5,7 @@ from datetime import datetime
 
 from database import get_db
 from models import Maintenance, User, Property, Agreement, Tenant
-from schemas import MaintenanceResponse, MaintenanceCreate
+from schemas import MaintenanceResponse, MaintenanceCreate, MaintenanceUpdate
 from dependencies import get_current_user
 
 router = APIRouter(
@@ -82,4 +82,34 @@ def create_maintenance_ticket(
     db.commit()
     db.refresh(ticket)
 
+    return ticket
+
+
+@router.put("/{ticket_id}", response_model=MaintenanceResponse)
+def update_maintenance_ticket(
+    ticket_id: int,
+    data: MaintenanceUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    ticket = db.query(Maintenance).filter(Maintenance.id == ticket_id).first()
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Maintenance ticket not found")
+
+    # Security check: manager/admin only
+    if current_user.role not in ["manager", "admin"]:
+        raise HTTPException(status_code=403, detail="Unauthorized to update maintenance tickets")
+
+    if current_user.role == "manager":
+        # Check if manager manages the property
+        prop = db.query(Property).filter(Property.id == ticket.property_id).first()
+        if not prop or prop.owner_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Unauthorized to update this ticket")
+
+    ticket.status = data.status
+    if data.notes is not None:
+        ticket.notes = data.notes
+
+    db.commit()
+    db.refresh(ticket)
     return ticket

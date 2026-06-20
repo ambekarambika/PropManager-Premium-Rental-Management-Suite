@@ -1058,6 +1058,31 @@ export async function createMaintenanceTicket(ticketData) {
   }
 }
 
+export async function updateMaintenanceTicket(id, ticketData) {
+  if (USE_MOCK) {
+    await sleep();
+    const db = getMockDB();
+    const index = db.maintenance.findIndex(m => m.id === id || String(m.id) === String(id));
+    if (index === -1) throw new Error('Maintenance ticket not found');
+
+    db.maintenance[index] = {
+      ...db.maintenance[index],
+      status: ticketData.status,
+      notes: ticketData.notes !== undefined ? ticketData.notes : db.maintenance[index].notes
+    };
+    saveMockDB(db);
+    return db.maintenance[index];
+  } else {
+    const res = await fetch(`${API_BASE_URL}/maintenance/${id}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(ticketData)
+    });
+    if (!res.ok) throw new Error('Failed to update maintenance ticket');
+    return await res.json();
+  }
+}
+
 
 
 

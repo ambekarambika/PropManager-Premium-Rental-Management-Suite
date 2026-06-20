@@ -20,7 +20,9 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080", "http://127.0.0.1:8080","https://prop-manager-premium-rental-managem.vercel.app"],
+    allow_origins=["http://localhost:8080", "http://127.0.0.1:8080","https://prop-manager-premium-rental-managem.vercel.app",
+        "https://prop-manager-premium-rental-management-suite-2hrft3bmy.vercel.app",
+        "https://prop-manager-premium-renta-git-53c513-ambikas-projects-d012f307.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

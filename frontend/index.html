@@ -102,6 +102,7 @@
         <div class="nav-item active" data-view="dashboard"><i class="ti ti-layout-dashboard" aria-hidden="true"></i> Dashboard</div>
         <div class="nav-item" data-view="properties"><i class="ti ti-building-estate" aria-hidden="true"></i> Properties</div>
         <div class="nav-item staff-only" data-view="tenants"><i class="ti ti-users" aria-hidden="true"></i> Tenants</div>
+        <div class="nav-item" data-view="maintenance"><i class="ti ti-tool" aria-hidden="true"></i> Maintenance</div>
         <div class="nav-item admin-only" data-view="users" style="display: none;"><i class="ti ti-user-cog" aria-hidden="true"></i> Users</div>
 
         <div class="nav-label">Finance</div>
@@ -469,6 +470,39 @@
         
         
         
+        <!-- Maintenance View -->
+        <div class="view-section" id="view-maintenance">
+          <div class="actions-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="tab-row" id="maintenance-tabs" style="margin-bottom: 0;">
+              <div class="tab active" data-tab="active">Active Tickets</div>
+              <div class="tab" data-tab="resolved">Resolved Tickets</div>
+            </div>
+            <div>
+              <button class="topbar-btn primary" id="btn-report-maintenance"><i class="ti ti-plus"></i> Report Issue</button>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Property</th>
+                    <th>Issue Description</th>
+                    <th>Reported Date</th>
+                    <th>Urgency Level</th>
+                    <th>Resolution Notes / Comments</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="maintenance-table-body">
+                  
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         <div class="view-section" id="view-settings">
           <div id="settings-profile-details">
             
@@ -772,6 +806,49 @@
   </div>
 
   
+  <!-- Maintenance Modal -->
+  <div class="modal-overlay" id="modal-maintenance">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="maint-modal-title">Report Maintenance Issue</h2>
+        <button class="modal-close" type="button"><i class="ti ti-x"></i></button>
+      </div>
+      <form id="form-maintenance">
+        <input type="hidden" id="maint-id-input">
+        <div class="modal-body">
+          <div class="form-group" id="maint-property-group">
+            <label class="form-label" for="maint-property-id">Select Property</label>
+            <select id="maint-property-id" class="form-control" required>
+              
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="maint-desc">Issue Description</label>
+            <textarea id="maint-desc" class="form-control" rows="3" placeholder="Describe the maintenance issue..." required></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="maint-status">Urgency Status</label>
+              <select id="maint-status" class="form-control" required>
+                <option value="pending">Pending</option>
+                <option value="urgent">Urgent</option>
+                <option value="done">Resolved</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="maint-notes">Resolution Notes / Comments</label>
+            <textarea id="maint-notes" class="form-control" rows="2" placeholder="Electrician assigned, work in progress, etc..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="topbar-btn btn-cancel">Cancel</button>
+          <button type="submit" class="topbar-btn primary">Save Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div class="toast" id="toast">
     <i class="ti ti-info-circle" aria-hidden="true" style="font-size: 16px;"></i>
     <span id="toast-message">Notification message here</span>

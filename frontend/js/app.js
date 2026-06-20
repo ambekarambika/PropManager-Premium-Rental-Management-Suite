@@ -12,24 +12,24 @@ const DOM = {
   registerForm: document.getElementById('register-form'),
   showRegisterLink: document.getElementById('show-register'),
   showLoginLink: document.getElementById('show-login'),
-  
+
   appRoot: document.getElementById('app-root'),
   sidebar: document.getElementById('sidebar'),
   userNameDisplay: document.getElementById('user-name-display'),
   userRoleDisplay: document.getElementById('user-role-display'),
   userAvatarDisplay: document.getElementById('user-avatar-display'),
   logoutBtn: document.getElementById('logout-btn'),
-  
+
   topbarTitle: document.getElementById('topbar-title'),
   globalSearch: document.getElementById('global-search'),
   globalSearchInput: document.getElementById('global-search-input'),
   filterBtn: document.getElementById('filter-btn'),
   addPropertyBtn: document.getElementById('add-property-btn'),
-  
+
   toast: document.getElementById('toast'),
   toastMessage: document.getElementById('toast-message'),
-  
-  
+
+
   views: {
     dashboard: document.getElementById('view-dashboard'),
     properties: document.getElementById('view-properties'),
@@ -37,30 +37,33 @@ const DOM = {
     agreements: document.getElementById('view-agreements'),
     payments: document.getElementById('view-payments'),
     settings: document.getElementById('view-settings'),
-    users: document.getElementById('view-users')
+    users: document.getElementById('view-users'),
+    maintenance: document.getElementById('view-maintenance')
   },
-  
-  
+
+
   navItems: document.querySelectorAll('.nav-item'),
-  
-  
+
+
   modals: {
     property: document.getElementById('modal-property'),
     tenant: document.getElementById('modal-tenant'),
     agreement: document.getElementById('modal-agreement'),
     payment: document.getElementById('modal-payment'),
     user: document.getElementById('modal-user'),
-    booking: document.getElementById('modal-booking')
+    booking: document.getElementById('modal-booking'),
+    maintenance: document.getElementById('modal-maintenance')
   },
-  
-  
+
+
   forms: {
     property: document.getElementById('form-property'),
     tenant: document.getElementById('form-tenant'),
     agreement: document.getElementById('form-agreement'),
     payment: document.getElementById('form-payment'),
     user: document.getElementById('form-user'),
-    booking: document.getElementById('form-booking')
+    booking: document.getElementById('form-booking'),
+    maintenance: document.getElementById('form-maintenance')
   }
 };
 
@@ -74,10 +77,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 function setupEventListeners() {
-  
+
   if (DOM.loginForm) DOM.loginForm.addEventListener('submit', handleLogin);
   if (DOM.registerForm) DOM.registerForm.addEventListener('submit', handleRegister);
-  
+
   if (DOM.showRegisterLink) {
     DOM.showRegisterLink.addEventListener('click', (e) => {
       e.preventDefault();
@@ -85,7 +88,7 @@ function setupEventListeners() {
       DOM.registerForm.style.display = 'block';
     });
   }
-  
+
   if (DOM.showLoginLink) {
     DOM.showLoginLink.addEventListener('click', (e) => {
       e.preventDefault();
@@ -93,8 +96,8 @@ function setupEventListeners() {
       DOM.loginForm.style.display = 'block';
     });
   }
-  
-  
+
+
   DOM.navItems.forEach(item => {
     item.addEventListener('click', () => {
       const view = item.getAttribute('data-view');
@@ -102,7 +105,7 @@ function setupEventListeners() {
     });
   });
 
-  
+
   if (DOM.logoutBtn) {
     DOM.logoutBtn.addEventListener('click', () => {
       api.logout();
@@ -111,7 +114,7 @@ function setupEventListeners() {
     });
   }
 
-  
+
   if (DOM.addPropertyBtn) {
     DOM.addPropertyBtn.addEventListener('click', () => {
       openPropertyModal();
@@ -125,14 +128,14 @@ function setupEventListeners() {
     });
   }
 
-  
+
   document.querySelectorAll('.modal-close, .btn-cancel').forEach(btn => {
     btn.addEventListener('click', () => {
       closeAllModals();
     });
   });
 
-  
+
   document.querySelectorAll('#prop-tabs .tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('#prop-tabs .tab').forEach(t => t.classList.remove('active'));
@@ -142,7 +145,7 @@ function setupEventListeners() {
     });
   });
 
-  
+
   if (DOM.globalSearchInput) {
     DOM.globalSearchInput.addEventListener('input', (e) => {
       const val = e.target.value;
@@ -152,7 +155,7 @@ function setupEventListeners() {
     });
   }
 
-  
+
   if (DOM.forms.property) DOM.forms.property.addEventListener('submit', handlePropertySubmit);
   if (DOM.forms.tenant) DOM.forms.tenant.addEventListener('submit', handleTenantSubmit);
   if (DOM.forms.agreement) DOM.forms.agreement.addEventListener('submit', handleAgreementSubmit);
@@ -160,7 +163,7 @@ function setupEventListeners() {
   if (DOM.forms.user) DOM.forms.user.addEventListener('submit', handleUserSubmit);
   if (DOM.forms.booking) DOM.forms.booking.addEventListener('submit', handleBookingSubmit);
 
-  
+
   const agreementsTabs = document.getElementById('agreements-tabs');
   if (agreementsTabs) {
     agreementsTabs.querySelectorAll('.tab').forEach(tab => {
@@ -168,10 +171,10 @@ function setupEventListeners() {
         agreementsTabs.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         const targetTab = tab.getAttribute('data-tab');
-        
+
         const leasesContainer = document.getElementById('lease-agreements-container');
         const bookingsContainer = document.getElementById('booking-requests-container');
-        
+
         if (targetTab === 'leases') {
           if (leasesContainer) leasesContainer.style.display = 'block';
           if (bookingsContainer) bookingsContainer.style.display = 'none';
@@ -185,7 +188,30 @@ function setupEventListeners() {
     });
   }
 
-  
+  const btnReportMaint = document.getElementById('btn-report-maintenance');
+  if (btnReportMaint) {
+    btnReportMaint.addEventListener('click', () => {
+      openMaintenanceModal();
+    });
+  }
+
+  if (DOM.forms.maintenance) {
+    DOM.forms.maintenance.addEventListener('submit', handleMaintenanceSubmit);
+  }
+
+  const maintenanceTabs = document.getElementById('maintenance-tabs');
+  if (maintenanceTabs) {
+    maintenanceTabs.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        maintenanceTabs.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const targetTab = tab.getAttribute('data-tab');
+        renderMaintenanceList(targetTab);
+      });
+    });
+  }
+
+
   document.querySelectorAll('.role-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
@@ -195,7 +221,7 @@ function setupEventListeners() {
       const passwordInput = document.getElementById('login-password');
       if (emailInput && passwordInput) {
         emailInput.value = email;
-        passwordInput.value = 'password'; 
+        passwordInput.value = 'password';
       }
     });
   });
@@ -207,25 +233,25 @@ function setupEventListeners() {
 async function checkAuth() {
   currentUser = await api.getCurrentUser();
   if (currentUser) {
-    
+
     DOM.authOverlay.style.display = 'none';
     DOM.appRoot.style.display = 'flex';
-    
-    
+
+
     DOM.userNameDisplay.textContent = currentUser.name;
     DOM.userRoleDisplay.textContent = currentUser.role === 'manager' ? 'Property Manager' : currentUser.role;
-    
-    
+
+
     const initials = currentUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     DOM.userAvatarDisplay.textContent = initials;
-    
-    
+
+
     applyRolePermissions();
-    
-    
+
+
     switchView(currentView);
   } else {
-    
+
     DOM.authOverlay.style.display = 'flex';
     DOM.appRoot.style.display = 'none';
     if (DOM.loginForm) {
@@ -239,7 +265,7 @@ async function handleLogin(e) {
   e.preventDefault();
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
-  
+
   try {
     const data = await api.login(email, password);
     showToast(`Welcome back, ${data.user.name}!`, 'success');
@@ -255,7 +281,7 @@ async function handleRegister(e) {
   const email = document.getElementById('register-email').value;
   const password = document.getElementById('register-password').value;
   const role = document.getElementById('register-role').value;
-  
+
   try {
     await api.register(name, email, password, role);
     showToast('Account registered successfully! Please log in.', 'success');
@@ -268,12 +294,12 @@ async function handleRegister(e) {
 
 function applyRolePermissions() {
   const role = currentUser.role;
-  
-  
+
+
   const managerOnlyElements = document.querySelectorAll('.manager-only');
   const adminOnlyElements = document.querySelectorAll('.admin-only');
-  const staffOnlyElements = document.querySelectorAll('.staff-only'); 
-  
+  const staffOnlyElements = document.querySelectorAll('.staff-only');
+
   if (role === 'tenant') {
     managerOnlyElements.forEach(el => el.style.display = 'none');
     adminOnlyElements.forEach(el => el.style.display = 'none');
@@ -296,15 +322,15 @@ function applyRolePermissions() {
 
 
 async function switchView(viewName) {
-  
+
   if (currentUser && currentUser.role === 'tenant' && (viewName === 'tenants' || viewName === 'users')) {
     switchView('dashboard');
     return;
   }
 
   currentView = viewName;
-  
-  
+
+
   DOM.navItems.forEach(item => {
     if (item.getAttribute('data-view') === viewName) {
       item.classList.add('active');
@@ -312,8 +338,8 @@ async function switchView(viewName) {
       item.classList.remove('active');
     }
   });
-  
-  
+
+
   Object.keys(DOM.views).forEach(name => {
     if (DOM.views[name]) {
       if (name === viewName) {
@@ -323,11 +349,11 @@ async function switchView(viewName) {
       }
     }
   });
-  
-  
+
+
   DOM.topbarTitle.textContent = viewName.charAt(0).toUpperCase() + viewName.slice(1);
-  
-  
+
+
   if (viewName === 'dashboard') {
     await loadDashboardData();
   } else if (viewName === 'properties') {
@@ -348,6 +374,8 @@ async function switchView(viewName) {
     loadSettingsData();
   } else if (viewName === 'users') {
     await renderUsersList();
+  } else if (viewName === 'maintenance') {
+    await renderMaintenanceList();
   }
 }
 
@@ -357,29 +385,29 @@ async function switchView(viewName) {
 async function loadDashboardData() {
   try {
     const role = currentUser.role;
-    
-    
+
+
     const adminDashboard = document.getElementById('dashboard-admin-manager');
     const tenantDashboard = document.getElementById('dashboard-tenant');
-    
+
     if (role === 'admin' || role === 'manager') {
       adminDashboard.style.display = 'block';
       tenantDashboard.style.display = 'none';
-      
+
       const data = await api.getDashboardData(role);
-      
-      
+
+
       document.getElementById('kpi-total-properties').textContent = data.kpi.totalProperties;
       document.getElementById('kpi-occupancy').textContent = data.kpi.occupancyRate;
       document.getElementById('kpi-rent-collected').textContent = data.kpi.rentCollected;
       document.getElementById('kpi-pending').textContent = data.kpi.pendingRent;
       document.getElementById('kpi-open-tickets').textContent = data.kpi.openTickets;
       document.getElementById('kpi-urgent-tickets').textContent = `${data.kpi.urgentTickets} urgent`;
-      
-      
+
+
       renderDashboardProperties('all');
-      
-      
+
+
       const dueList = document.getElementById('due-rents-list');
       dueList.innerHTML = '';
       if (data.dueRents.length === 0) {
@@ -388,10 +416,10 @@ async function loadDashboardData() {
         data.dueRents.forEach(item => {
           const itemDiv = document.createElement('div');
           itemDiv.className = 'rent-item';
-          
+
           let dotColor = 'dot-amber';
           if (item.status === 'overdue') dotColor = 'dot-red';
-          
+
           itemDiv.innerHTML = `
             <span class="rent-dot ${dotColor}"></span>
             <span class="rent-tenant">${item.tenantName}</span>
@@ -401,12 +429,12 @@ async function loadDashboardData() {
           dueList.appendChild(itemDiv);
         });
       }
-      
-      
+
+
       const tickets = await api.getMaintenanceTickets();
       const maintList = document.getElementById('dashboard-maint-list');
       maintList.innerHTML = '';
-      
+
       const activeTickets = tickets.slice(0, 3);
       if (activeTickets.length === 0) {
         maintList.innerHTML = '<div style="font-size:12px;color:var(--text-secondary);padding:10px 0;text-align:center;">No active maintenance tickets</div>';
@@ -414,16 +442,16 @@ async function loadDashboardData() {
         activeTickets.forEach(item => {
           const itemDiv = document.createElement('div');
           itemDiv.className = 'maint-item';
-          
+
           let iconClass = 'ti-tool';
           if (item.description.toLowerCase().includes('leak') || item.description.toLowerCase().includes('water')) iconClass = 'ti-droplet';
           else if (item.description.toLowerCase().includes('power') || item.description.toLowerCase().includes('light')) iconClass = 'ti-plug';
           else if (item.description.toLowerCase().includes('paint')) iconClass = 'ti-paint';
-          
+
           let badgeClass = 'badge-pending';
           if (item.status === 'urgent') badgeClass = 'badge-urgent';
           else if (item.status === 'done') badgeClass = 'badge-done';
-          
+
           itemDiv.innerHTML = `
             <div class="maint-icon"><i class="ti ${iconClass}" aria-hidden="true"></i></div>
             <div class="maint-info">
@@ -436,26 +464,26 @@ async function loadDashboardData() {
         });
       }
 
-      
+
       const bars = document.querySelectorAll('.bar-chart .bar');
       data.collectionTrend.forEach((height, i) => {
         if (bars[i]) {
           bars[i].style.height = `${height}px`;
         }
       });
-      
-      
+
+
       const actList = document.getElementById('recent-activity-list');
       actList.innerHTML = '';
       data.recentActivity.forEach(act => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'act-item';
-        
+
         let dotColor = 'var(--primary)';
         if (act.type === 'warning') dotColor = 'var(--danger-dot)';
         else if (act.type === 'tenant') dotColor = 'var(--text-tertiary)';
         else if (act.type === 'agreement') dotColor = '#185FA5';
-        
+
         itemDiv.innerHTML = `
           <div class="act-dot" style="background:${dotColor}"></div>
           <div>
@@ -465,15 +493,15 @@ async function loadDashboardData() {
         `;
         actList.appendChild(itemDiv);
       });
-    } 
-    
+    }
+
     else if (role === 'tenant') {
       adminDashboard.style.display = 'none';
       tenantDashboard.style.display = 'block';
-      
+
       const data = await api.getDashboardData(role);
-      
-      
+
+
       const leaseCard = document.getElementById('tenant-lease-card');
       if (data.lease) {
         leaseCard.innerHTML = `
@@ -502,7 +530,7 @@ async function loadDashboardData() {
           </div>
         `;
 
-        
+
         const cancelLeaseBtn = leaseCard.querySelector('.btn-cancel-lease');
         if (cancelLeaseBtn) {
           cancelLeaseBtn.addEventListener('click', async () => {
@@ -521,8 +549,8 @@ async function loadDashboardData() {
       } else {
         leaseCard.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-secondary)">No active lease agreement found.</div>';
       }
-      
-      
+
+
       const contactsList = document.getElementById('tenant-contacts-list');
       if (contactsList && data.contacts) {
         contactsList.innerHTML = `
@@ -545,7 +573,7 @@ async function loadDashboardData() {
         `;
       }
 
-      
+
       const payHighlight = document.getElementById('tenant-payment-highlight');
       if (data.nextPayment) {
         payHighlight.innerHTML = `
@@ -562,8 +590,8 @@ async function loadDashboardData() {
           <div style="font-size:16px;font-weight:600;color:var(--success);margin-top:8px">All rent payments up to date!</div>
         `;
       }
-      
-      
+
+
       const payList = document.getElementById('tenant-payment-list');
       payList.innerHTML = '';
       if (data.payments.length === 0) {
@@ -575,7 +603,7 @@ async function loadDashboardData() {
           if (p.status === 'paid') statusBadge = '<span class="prop-status status-occupied">Paid</span>';
           else if (p.status === 'pending') statusBadge = '<span class="prop-status status-vacant">Pending</span>';
           else statusBadge = '<span class="prop-status status-maintenance">Overdue</span>';
-          
+
           row.innerHTML = `
             <td>${formatDateMedium(p.due_date)}</td>
             <td>₹${p.amount.toLocaleString('en-IN')}</td>
@@ -585,8 +613,8 @@ async function loadDashboardData() {
           payList.appendChild(row);
         });
       }
-      
-      
+
+
       const tenantMaintList = document.getElementById('tenant-maint-list');
       tenantMaintList.innerHTML = '';
       if (data.maintenanceTickets.length === 0) {
@@ -595,11 +623,11 @@ async function loadDashboardData() {
         data.maintenanceTickets.forEach(item => {
           const div = document.createElement('div');
           div.className = 'maint-item';
-          
+
           let badgeClass = 'badge-pending';
           if (item.status === 'urgent') badgeClass = 'badge-urgent';
           else if (item.status === 'done') badgeClass = 'badge-done';
-          
+
           div.innerHTML = `
             <div class="maint-icon"><i class="ti ti-tool" aria-hidden="true"></i></div>
             <div class="maint-info">
@@ -622,16 +650,16 @@ async function renderDashboardProperties(filter = 'all') {
   const container = document.getElementById('dashboard-properties-list');
   if (!container) return;
   container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-tertiary)">Loading properties...</div>';
-  
+
   try {
     const properties = await api.getProperties({ status: filter });
     container.innerHTML = '';
-    
+
     if (properties.length === 0) {
       container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary)">No properties found.</div>';
       return;
     }
-    
+
     properties.forEach(p => {
       const card = document.createElement('div');
       card.className = 'prop-card';
@@ -639,13 +667,13 @@ async function renderDashboardProperties(filter = 'all') {
         switchView('properties');
         renderPropertiesList(p.title);
       });
-      
+
       let thumbClass = 'flat';
       let thumbIcon = 'ti-building';
       if (p.type === 'villa') { thumbClass = 'villa'; thumbIcon = 'ti-home'; }
       else if (p.type === 'commercial') { thumbClass = 'commercial'; thumbIcon = 'ti-briefcase'; }
       else if (p.type === 'studio') { thumbClass = 'studio'; thumbIcon = 'ti-bed'; }
-      
+
       let badgeMarkup = '';
       if (p.status === 'occupied') {
         badgeMarkup = `
@@ -659,7 +687,7 @@ async function renderDashboardProperties(filter = 'all') {
       } else {
         badgeMarkup = `<div class="prop-status status-maintenance">Maintenance</div>`;
       }
-      
+
       card.innerHTML = `
         <div class="prop-thumb ${thumbClass}"><i class="ti ${thumbIcon}" aria-hidden="true"></i></div>
         <div class="prop-info">
@@ -689,32 +717,32 @@ async function renderPropertiesList(searchTerm = '') {
   const container = document.getElementById('properties-grid-container');
   if (!container) return;
   container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-tertiary)">Fetching properties...</div>';
-  
+
   try {
     const list = await api.getProperties({ search: searchTerm });
     container.innerHTML = '';
-    
+
     if (list.length === 0) {
       container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-secondary)">No properties found. Try a different search.</div>';
       return;
     }
-    
+
     list.forEach(p => {
       const card = document.createElement('div');
       card.className = 'card';
       card.style.position = 'relative';
-      
+
       let thumbClass = 'flat';
       let thumbIcon = 'ti-building';
       if (p.type === 'villa') { thumbClass = 'villa'; thumbIcon = 'ti-home'; }
       else if (p.type === 'commercial') { thumbClass = 'commercial'; thumbIcon = 'ti-briefcase'; }
       else if (p.type === 'studio') { thumbClass = 'studio'; thumbIcon = 'ti-bed'; }
-      
+
       let statusBadgeClass = 'status-vacant';
       if (p.status === 'occupied') statusBadgeClass = 'status-occupied';
       else if (p.status === 'maintenance') statusBadgeClass = 'status-maintenance';
-      
-      
+
+
       let actionsHtml = '';
       if (currentUser.role !== 'tenant') {
         actionsHtml = `
@@ -730,7 +758,7 @@ async function renderPropertiesList(searchTerm = '') {
           </div>
         `;
       }
-      
+
       card.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
           <div class="prop-thumb ${thumbClass}"><i class="ti ${thumbIcon}" aria-hidden="true"></i></div>
@@ -749,15 +777,15 @@ async function renderPropertiesList(searchTerm = '') {
         </div>
         ${actionsHtml}
       `;
-      
-      
+
+
       if (currentUser.role !== 'tenant') {
         card.querySelector('.btn-edit-prop').addEventListener('click', () => openPropertyModal(p.id));
         card.querySelector('.btn-delete-prop').addEventListener('click', () => handlePropertyDelete(p.id));
       } else if (p.status === 'vacant') {
         card.querySelector('.btn-book-prop').addEventListener('click', () => openBookingModal(p.id, p.title));
       }
-      
+
       container.appendChild(card);
     });
   } catch (err) {
@@ -768,15 +796,15 @@ async function renderPropertiesList(searchTerm = '') {
 function openPropertyModal(propertyId = null) {
   const form = DOM.forms.property;
   form.reset();
-  
+
   const modalTitle = document.getElementById('prop-modal-title');
   const propIdInput = document.getElementById('prop-id-input');
-  
+
   if (propertyId) {
     modalTitle.textContent = 'Edit Property Details';
     propIdInput.value = propertyId;
-    
-    
+
+
     api.getProperty(propertyId).then(p => {
       document.getElementById('prop-title').value = p.title;
       document.getElementById('prop-address').value = p.address;
@@ -787,7 +815,7 @@ function openPropertyModal(propertyId = null) {
       document.getElementById('prop-rent').value = p.rent_amount;
       document.getElementById('prop-desc').value = p.description || '';
       document.getElementById('prop-status-select').value = p.status || 'vacant';
-      
+
       DOM.modals.property.classList.add('active');
     }).catch(err => {
       showToast('Error getting property: ' + err.message, 'error');
@@ -803,7 +831,7 @@ function openPropertyModal(propertyId = null) {
 async function handlePropertySubmit(e) {
   e.preventDefault();
   const propId = document.getElementById('prop-id-input').value;
-  
+
   const data = {
     title: document.getElementById('prop-title').value,
     address: document.getElementById('prop-address').value,
@@ -816,7 +844,7 @@ async function handlePropertySubmit(e) {
     status: document.getElementById('prop-status-select').value || 'vacant',
     manager_id: currentUser.id
   };
-  
+
   try {
     if (propId) {
       await api.updateProperty(propId, data);
@@ -851,39 +879,39 @@ async function renderTenantsList() {
   const tableBody = document.getElementById('tenants-table-body');
   if (!tableBody) return;
   tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-tertiary)">Loading tenants...</td></tr>';
-  
+
   const addBtnDiv = document.getElementById('tenants-actions-wrap');
   if (addBtnDiv) {
-    addBtnDiv.innerHTML = currentUser.role !== 'tenant' 
-      ? '<button class="topbar-btn primary" id="btn-add-tenant"><i class="ti ti-plus"></i> Add tenant</button>' 
+    addBtnDiv.innerHTML = currentUser.role !== 'tenant'
+      ? '<button class="topbar-btn primary" id="btn-add-tenant"><i class="ti ti-plus"></i> Add tenant</button>'
       : '';
     const addBtn = document.getElementById('btn-add-tenant');
     if (addBtn) addBtn.addEventListener('click', () => openTenantModal());
   }
-  
+
   try {
     const tenants = await api.getTenants();
     const agreements = await api.getAgreements();
     const properties = await api.getProperties();
-    
+
     tableBody.innerHTML = '';
-    
+
     if (tenants.length === 0) {
       tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-secondary)">No tenants registered yet.</td></tr>';
       return;
     }
-    
+
     tenants.forEach(t => {
-      
+
       const activeAgr = agreements.find(a => a.tenant_id === t.id && a.status === 'active');
       let propertyName = 'Unassigned';
       if (activeAgr) {
         const prop = properties.find(p => p.id === activeAgr.property_id);
         if (prop) propertyName = prop.title;
       }
-      
+
       const row = document.createElement('tr');
-      
+
       let actionColumnHtml = '<td>—</td>';
       if (currentUser.role !== 'tenant') {
         actionColumnHtml = `
@@ -892,7 +920,7 @@ async function renderTenantsList() {
           </td>
         `;
       }
-      
+
       row.innerHTML = `
         <td style="font-weight:600;color:var(--text-primary)">${t.name}</td>
         <td>${t.email}</td>
@@ -904,11 +932,11 @@ async function renderTenantsList() {
         </td>
         ${actionColumnHtml}
       `;
-      
+
       if (currentUser.role !== 'tenant') {
         row.querySelector('.btn-edit-tenant').addEventListener('click', () => openTenantModal(t.id));
       }
-      
+
       tableBody.appendChild(row);
     });
   } catch (err) {
@@ -919,14 +947,14 @@ async function renderTenantsList() {
 function openTenantModal(tenantId = null) {
   const form = DOM.forms.tenant;
   form.reset();
-  
+
   const modalTitle = document.getElementById('tenant-modal-title');
   const tenantIdInput = document.getElementById('tenant-id-input');
-  
+
   if (tenantId) {
     modalTitle.textContent = 'Edit Tenant Details';
     tenantIdInput.value = tenantId;
-    
+
     api.getTenants().then(list => {
       const t = list.find(x => x.id === tenantId);
       if (t) {
@@ -934,7 +962,7 @@ function openTenantModal(tenantId = null) {
         document.getElementById('tenant-email').value = t.email;
         document.getElementById('tenant-phone').value = t.phone || '';
         document.getElementById('tenant-emergency').value = t.emergency_contact || '';
-        
+
         DOM.modals.tenant.classList.add('active');
       }
     });
@@ -948,14 +976,14 @@ function openTenantModal(tenantId = null) {
 async function handleTenantSubmit(e) {
   e.preventDefault();
   const tenantId = document.getElementById('tenant-id-input').value;
-  
+
   const data = {
     name: document.getElementById('tenant-name').value,
     email: document.getElementById('tenant-email').value,
     phone: document.getElementById('tenant-phone').value,
     emergency_contact: document.getElementById('tenant-emergency').value
   };
-  
+
   try {
     if (tenantId) {
       await api.updateTenant(tenantId, data);
@@ -978,11 +1006,11 @@ async function renderAgreementsList() {
   const tableBody = document.getElementById('agreements-table-body');
   if (!tableBody) return;
   tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-tertiary)">Loading lease agreements...</td></tr>';
-  
+
   const addBtnDiv = document.getElementById('agreements-actions-wrap');
   if (addBtnDiv) {
-    addBtnDiv.innerHTML = currentUser.role !== 'tenant' 
-      ? '<button class="topbar-btn primary" id="btn-add-agreement"><i class="ti ti-plus"></i> New lease agreement</button>' 
+    addBtnDiv.innerHTML = currentUser.role !== 'tenant'
+      ? '<button class="topbar-btn primary" id="btn-add-agreement"><i class="ti ti-plus"></i> New lease agreement</button>'
       : '';
     const addBtn = document.getElementById('btn-add-agreement');
     if (addBtn) addBtn.addEventListener('click', () => openAgreementModal());
@@ -992,27 +1020,27 @@ async function renderAgreementsList() {
     const list = await api.getAgreements();
     const properties = await api.getProperties();
     const tenants = await api.getTenants();
-    
+
     tableBody.innerHTML = '';
-    
+
     if (list.length === 0) {
       tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-secondary)">No agreements registered yet.</td></tr>';
       return;
     }
-    
-    
+
+
     list.sort((a, b) => (a.status === 'active' ? -1 : 1));
-    
+
     list.forEach(a => {
       const prop = properties.find(p => p.id === a.property_id);
       const tenant = tenants.find(t => t.id === a.tenant_id);
-      
+
       const row = document.createElement('tr');
-      
+
       let statusClass = 'status-vacant';
       if (a.status === 'active') statusClass = 'status-occupied';
       else if (a.status === 'terminated') statusClass = 'status-maintenance';
-      
+
       let actionColumn = '<td>—</td>';
       if (currentUser.role !== 'tenant' && a.status === 'active') {
         actionColumn = `
@@ -1021,7 +1049,7 @@ async function renderAgreementsList() {
           </td>
         `;
       }
-      
+
       row.innerHTML = `
         <td style="font-weight:600;color:var(--text-primary)">${prop ? prop.title : 'Deleted Property'}</td>
         <td>${tenant ? tenant.name : 'Unknown'}</td>
@@ -1033,11 +1061,11 @@ async function renderAgreementsList() {
         <td><span class="prop-status ${statusClass}">${a.status}</span></td>
         ${actionColumn}
       `;
-      
+
       if (currentUser.role !== 'tenant' && a.status === 'active') {
         row.querySelector('.btn-terminate-agreement').addEventListener('click', () => handleAgreementTerminate(a.id));
       }
-      
+
       tableBody.appendChild(row);
     });
   } catch (err) {
@@ -1048,18 +1076,18 @@ async function renderAgreementsList() {
 async function openAgreementModal() {
   const form = DOM.forms.agreement;
   form.reset();
-  
+
   const propSelect = document.getElementById('agreement-property-id');
   const tenantSelect = document.getElementById('agreement-tenant-id');
-  
+
   propSelect.innerHTML = '<option value="">-- Loading Vacant Properties --</option>';
   tenantSelect.innerHTML = '<option value="">-- Loading Tenants --</option>';
-  
+
   try {
-    
+
     const props = await api.getProperties();
     const vacantProps = props.filter(p => p.status === 'vacant');
-    
+
     propSelect.innerHTML = '<option value="">Select a property...</option>';
     if (vacantProps.length === 0) {
       propSelect.innerHTML = '<option value="">No vacant properties available</option>';
@@ -1068,24 +1096,24 @@ async function openAgreementModal() {
         propSelect.innerHTML += `<option value="${p.id}">${p.title} (Rent: ₹${p.rent_amount.toLocaleString('en-IN')}/mo)</option>`;
       });
     }
-    
-    
+
+
     const tenants = await api.getTenants();
     tenantSelect.innerHTML = '<option value="">Select a tenant...</option>';
     tenants.forEach(t => {
       tenantSelect.innerHTML += `<option value="${t.id}">${t.name} (${t.email})</option>`;
     });
-    
-    
+
+
     propSelect.addEventListener('change', (e) => {
       const selectedId = e.target.value;
       const selectedProp = props.find(p => p.id === selectedId);
       if (selectedProp) {
         document.getElementById('agreement-rent').value = selectedProp.rent_amount;
-        document.getElementById('agreement-deposit').value = selectedProp.rent_amount * 2; 
+        document.getElementById('agreement-deposit').value = selectedProp.rent_amount * 2;
       }
     });
-    
+
     DOM.modals.agreement.classList.add('active');
   } catch (err) {
     showToast('Failed to populate selectors: ' + err.message, 'error');
@@ -1094,7 +1122,7 @@ async function openAgreementModal() {
 
 async function handleAgreementSubmit(e) {
   e.preventDefault();
-  
+
   const data = {
     property_id: document.getElementById('agreement-property-id').value,
     tenant_id: document.getElementById('agreement-tenant-id').value,
@@ -1103,12 +1131,12 @@ async function handleAgreementSubmit(e) {
     rent_amount: document.getElementById('agreement-rent').value,
     deposit_amount: document.getElementById('agreement-deposit').value
   };
-  
+
   if (!data.property_id || !data.tenant_id || !data.start_date || !data.end_date) {
     showToast('Please fill out all required fields', 'error');
     return;
   }
-  
+
   try {
     await api.createAgreement(data);
     showToast('Lease agreement created successfully! Property status updated to Occupied.', 'success');
@@ -1138,46 +1166,46 @@ async function renderPaymentsList() {
   const tableBody = document.getElementById('payments-table-body');
   if (!tableBody) return;
   tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary)">Loading ledger records...</td></tr>';
-  
+
   try {
     const list = await api.getPayments();
     const agreements = await api.getAgreements();
     const properties = await api.getProperties();
     const tenants = await api.getTenants();
-    
+
     tableBody.innerHTML = '';
-    
+
     if (list.length === 0) {
       tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary)">No payment records.</td></tr>';
       return;
     }
-    
-    
+
+
     list.sort((a, b) => {
       if (a.status !== 'paid' && b.status === 'paid') return -1;
       if (a.status === 'paid' && b.status !== 'paid') return 1;
       return new Date(b.due_date) - new Date(a.due_date);
     });
-    
+
     list.forEach(p => {
       const agr = agreements.find(a => a.id === p.agreement_id);
       let propName = 'Unknown Property';
       let tenantName = 'Unknown Tenant';
-      
+
       if (agr) {
         const prop = properties.find(x => x.id === agr.property_id);
         if (prop) propName = prop.title;
         const tenant = tenants.find(x => x.id === agr.tenant_id);
         if (tenant) tenantName = tenant.name;
       }
-      
+
       const row = document.createElement('tr');
-      
+
       let statusBadge = '';
       if (p.status === 'paid') statusBadge = '<span class="prop-status status-occupied">Paid</span>';
       else if (p.status === 'pending') statusBadge = '<span class="prop-status status-vacant">Pending</span>';
       else statusBadge = '<span class="prop-status status-maintenance">Overdue</span>';
-      
+
       let actionColumn = '<td>—</td>';
       if (currentUser.role !== 'tenant' && p.status !== 'paid') {
         actionColumn = `
@@ -1186,7 +1214,7 @@ async function renderPaymentsList() {
           </td>
         `;
       }
-      
+
       row.innerHTML = `
         <td style="font-weight:600;color:var(--text-primary)">${propName}</td>
         <td>${tenantName}</td>
@@ -1196,11 +1224,11 @@ async function renderPaymentsList() {
         <td>${p.payment_date ? `${formatDateMedium(p.payment_date)} (${p.payment_method || 'UPI'})` : '—'}</td>
         ${currentUser.role !== 'tenant' ? actionColumn : ''}
       `;
-      
+
       if (currentUser.role !== 'tenant' && p.status !== 'paid') {
         row.querySelector('.btn-pay-record').addEventListener('click', () => openPaymentModal(p.id, p.amount));
       }
-      
+
       tableBody.appendChild(row);
     });
   } catch (err) {
@@ -1211,7 +1239,7 @@ async function renderPaymentsList() {
 function openPaymentModal(paymentId, amount) {
   document.getElementById('payment-id-input').value = paymentId;
   document.getElementById('payment-amount-display').textContent = `₹${amount.toLocaleString('en-IN')}`;
-  
+
   DOM.modals.payment.classList.add('active');
 }
 
@@ -1219,7 +1247,7 @@ async function handlePaymentSubmit(e) {
   e.preventDefault();
   const paymentId = document.getElementById('payment-id-input').value;
   const method = document.getElementById('payment-method').value;
-  
+
   try {
     await api.recordPayment(paymentId, { payment_method: method });
     showToast('Payment recorded successfully! Balance updated.', 'success');
@@ -1236,9 +1264,9 @@ async function handlePaymentSubmit(e) {
 function loadSettingsData() {
   const details = document.getElementById('settings-profile-details');
   if (!details) return;
-  
+
   const isTenant = currentUser.role === 'tenant';
-  
+
   details.innerHTML = `
     <div class="card" style="max-width: 500px">
       <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:14px">Profile Details</div>
@@ -1277,7 +1305,7 @@ function loadSettingsData() {
     if (isTenant) {
       data.emergency_contact = document.getElementById('profile-emergency').value;
     }
-    
+
     try {
       await api.updateUserProfile(currentUser.id, data);
       showToast('Profile updated successfully', 'success');
@@ -1301,12 +1329,12 @@ function closeAllModals() {
 
 function showToast(message, type = 'info') {
   DOM.toastMessage.textContent = message;
-  
+
   DOM.toast.className = 'toast active';
   if (type === 'success') DOM.toast.classList.add('toast-success');
   else if (type === 'error') DOM.toast.classList.add('toast-error');
   else DOM.toast.classList.add('toast-info');
-  
+
   setTimeout(() => {
     DOM.toast.classList.remove('active');
   }, 3000);
@@ -1331,19 +1359,19 @@ async function renderUsersList() {
   const tableBody = document.getElementById('users-table-body');
   if (!tableBody) return;
   tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary)">Loading system accounts...</td></tr>';
-  
+
   try {
     const list = await api.getUsers();
     tableBody.innerHTML = '';
-    
+
     list.forEach(u => {
       const row = document.createElement('tr');
-      
+
       const isDeactivated = u.status === 'deactivated';
-      let statusBadge = isDeactivated 
-        ? '<span class="prop-status status-maintenance">Deactivated</span>' 
+      let statusBadge = isDeactivated
+        ? '<span class="prop-status status-maintenance">Deactivated</span>'
         : '<span class="prop-status status-occupied">Active</span>';
-        
+
       let actionBtnMarkup = '';
       if (currentUser.id !== u.id) {
         actionBtnMarkup = `
@@ -1354,7 +1382,7 @@ async function renderUsersList() {
       } else {
         actionBtnMarkup = '<span style="font-size:11px;color:var(--text-tertiary)">Logged In</span>';
       }
-      
+
       row.innerHTML = `
         <td style="font-weight:600;color:var(--text-primary)">${u.name}</td>
         <td>${u.email}</td>
@@ -1363,11 +1391,11 @@ async function renderUsersList() {
         <td>${statusBadge}</td>
         <td>${actionBtnMarkup}</td>
       `;
-      
+
       if (currentUser.id !== u.id) {
         row.querySelector('.btn-toggle-user').addEventListener('click', () => handleUserToggleStatus(u.id));
       }
-      
+
       tableBody.appendChild(row);
     });
   } catch (err) {
@@ -1383,14 +1411,14 @@ function openUserModal() {
 
 async function handleUserSubmit(e) {
   e.preventDefault();
-  
+
   const data = {
     name: document.getElementById('user-name').value,
     email: document.getElementById('user-email').value,
     phone: document.getElementById('user-phone').value,
     role: document.getElementById('user-role').value
   };
-  
+
   try {
     await api.createAdminUser(data);
     showToast('User account created successfully!', 'success');
@@ -1417,20 +1445,20 @@ async function handleUserToggleStatus(id) {
 function openBookingModal(propertyId, propertyTitle) {
   const form = DOM.forms.booking;
   form.reset();
-  
+
   document.getElementById('booking-property-id').value = propertyId;
   document.getElementById('booking-property-title').textContent = propertyTitle;
-  
+
   const today = new Date();
   const nextMonth = new Date();
   nextMonth.setMonth(today.getMonth() + 1);
-  
+
   document.getElementById('booking-start-date').value = today.toISOString().split('T')[0];
-  
+
   const oneYearLater = new Date(nextMonth);
   oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
   document.getElementById('booking-end-date').value = oneYearLater.toISOString().split('T')[0];
-  
+
   DOM.modals.booking.classList.add('active');
 }
 
@@ -1439,21 +1467,21 @@ async function handleBookingSubmit(e) {
   const propertyId = document.getElementById('booking-property-id').value;
   const startDate = document.getElementById('booking-start-date').value;
   const endDate = document.getElementById('booking-end-date').value;
-  
+
   try {
     const tenants = await api.getTenants();
     const tenant = tenants.find(t => t.user_id === currentUser.id);
     if (!tenant) {
       throw new Error('Tenant profile not found for this account.');
     }
-    
+
     await api.createBookingRequest({
       property_id: propertyId,
       tenant_id: tenant.id,
       start_date: startDate,
       end_date: endDate
     });
-    
+
     showToast('Booking request submitted to Manager!', 'success');
     closeAllModals();
     await renderPropertiesList();
@@ -1466,25 +1494,25 @@ async function renderBookingRequestsList() {
   const tableBody = document.getElementById('booking-requests-table-body');
   if (!tableBody) return;
   tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary)">Loading booking requests...</td></tr>';
-  
+
   try {
     const list = await api.getBookingRequests();
     const properties = await api.getProperties();
     const tenants = await api.getTenants();
-    
+
     tableBody.innerHTML = '';
-    
+
     if (list.length === 0) {
       tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary)">No pending booking requests.</td></tr>';
       return;
     }
-    
+
     list.forEach(r => {
       const prop = properties.find(p => p.id === r.property_id);
       const tenant = tenants.find(t => t.id === r.tenant_id);
-      
+
       const row = document.createElement('tr');
-      
+
       let actionBtnMarkup = '—';
       if (currentUser.role !== 'tenant' && r.status === 'pending') {
         actionBtnMarkup = `
@@ -1494,7 +1522,7 @@ async function renderBookingRequestsList() {
           </div>
         `;
       }
-      
+
       row.innerHTML = `
         <td style="font-weight:600;color:var(--text-primary)">${prop ? prop.title : 'Deleted Property'}</td>
         <td>${tenant ? tenant.name : 'Unknown Tenant'}</td>
@@ -1503,12 +1531,12 @@ async function renderBookingRequestsList() {
         <td><span class="prop-status status-vacant">${r.status}</span></td>
         <td>${actionBtnMarkup}</td>
       `;
-      
+
       if (currentUser.role !== 'tenant' && r.status === 'pending') {
         row.querySelector('.btn-approve-request').addEventListener('click', () => handleApproveBookingRequest(r.id));
         row.querySelector('.btn-delete-request').addEventListener('click', () => handleDeleteBookingRequest(r.id));
       }
-      
+
       tableBody.appendChild(row);
     });
   } catch (err) {
@@ -1556,5 +1584,205 @@ async function updateBookingBadge() {
     }
   } catch (e) {
     console.error(e);
+  }
+}
+
+async function renderMaintenanceList(tabFilter = 'active') {
+  const tableBody = document.getElementById('maintenance-table-body');
+  if (!tableBody) return;
+  tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary)">Loading maintenance tickets...</td></tr>';
+
+  try {
+    const [tickets, properties] = await Promise.all([
+      api.getMaintenanceTickets(),
+      api.getProperties()
+    ]);
+
+    tableBody.innerHTML = '';
+
+    // Filter tickets
+    const filteredTickets = tickets.filter(t => {
+      if (tabFilter === 'resolved') {
+        return t.status === 'done';
+      } else {
+        return t.status !== 'done';
+      }
+    });
+
+    if (filteredTickets.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-secondary)">No ${tabFilter} maintenance tickets found.</td></tr>`;
+      return;
+    }
+
+    // Sort: urgent tickets first, then newest reported date
+    filteredTickets.sort((a, b) => {
+      if (a.status === 'urgent' && b.status !== 'urgent') return -1;
+      if (a.status !== 'urgent' && b.status === 'urgent') return 1;
+      return new Date(b.reported_date) - new Date(a.reported_date);
+    });
+
+    filteredTickets.forEach(t => {
+      const prop = properties.find(p => p.id === t.property_id);
+      const row = document.createElement('tr');
+
+      let statusBadge = '';
+      if (t.status === 'urgent') {
+        statusBadge = '<span class="prop-status status-maintenance">Urgent</span>';
+      } else if (t.status === 'done') {
+        statusBadge = '<span class="prop-status status-occupied">Resolved</span>';
+      } else {
+        statusBadge = '<span class="prop-status status-vacant">Pending</span>';
+      }
+
+      let actionsColumn = '<td>—</td>';
+      if (currentUser.role !== 'tenant') {
+        actionsColumn = `
+          <td>
+            <button class="topbar-btn btn-edit-maint" data-id="${t.id}" style="padding:4px 8px;font-size:11px;display:inline-flex"><i class="ti ti-edit"></i> Update</button>
+          </td>
+        `;
+      }
+
+      row.innerHTML = `
+        <td style="font-weight:600;color:var(--text-primary)">${prop ? prop.title : 'Deleted Property'}</td>
+        <td>${t.description}</td>
+        <td>${formatDateMedium(t.reported_date)}</td>
+        <td>${statusBadge}</td>
+        <td>${t.notes || '—'}</td>
+        ${actionsColumn}
+      `;
+
+      if (currentUser.role !== 'tenant') {
+        row.querySelector('.btn-edit-maint').addEventListener('click', () => openMaintenanceModal(t.id));
+      }
+
+      tableBody.appendChild(row);
+    });
+  } catch (err) {
+    tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger)">Error: ${err.message}</td></tr>`;
+  }
+}
+
+async function openMaintenanceModal(ticketId = null) {
+  const form = DOM.forms.maintenance;
+  form.reset();
+
+  const modalTitle = document.getElementById('maint-modal-title');
+  const maintIdInput = document.getElementById('maint-id-input');
+  const propSelect = document.getElementById('maint-property-id');
+  const statusSelect = document.getElementById('maint-status');
+  const notesField = document.getElementById('maint-notes');
+  const descField = document.getElementById('maint-desc');
+
+  maintIdInput.value = ticketId || '';
+  propSelect.innerHTML = '<option value="">-- Loading Properties --</option>';
+  propSelect.disabled = false;
+  descField.disabled = false;
+
+  // Manage field visibility and disabled status by role
+  if (currentUser.role === 'tenant') {
+    statusSelect.disabled = true;
+    notesField.disabled = true;
+  } else {
+    statusSelect.disabled = false;
+    notesField.disabled = false;
+  }
+
+  try {
+    const [properties, tenants, agreements] = await Promise.all([
+      api.getProperties(),
+      api.getTenants(),
+      api.getAgreements()
+    ]);
+
+    let selectableProps = [];
+
+    if (currentUser.role === 'tenant') {
+      const tenant = tenants.find(t => t.user_id === currentUser.id);
+      if (tenant) {
+        const activeAgreements = agreements.filter(a => a.tenant_id === tenant.id && a.status === 'active');
+        const leasedPropIds = activeAgreements.map(a => a.property_id);
+        selectableProps = properties.filter(p => leasedPropIds.includes(p.id));
+      }
+    } else if (currentUser.role === 'manager') {
+      selectableProps = properties.filter(p => p.manager_id === currentUser.id || p.owner_id === currentUser.id);
+    } else {
+      selectableProps = properties;
+    }
+
+    propSelect.innerHTML = '<option value="">Select property...</option>';
+    if (selectableProps.length === 0) {
+      propSelect.innerHTML = '<option value="">No properties available</option>';
+    } else {
+      selectableProps.forEach(p => {
+        propSelect.innerHTML += `<option value="${p.id}">${p.title}</option>`;
+      });
+    }
+
+    if (ticketId) {
+      modalTitle.textContent = 'Update Maintenance Ticket';
+
+      const tickets = await api.getMaintenanceTickets();
+      const ticket = tickets.find(t => t.id === ticketId || String(t.id) === String(ticketId));
+      if (ticket) {
+        propSelect.value = ticket.property_id;
+        propSelect.disabled = true;
+
+        descField.value = ticket.description;
+        descField.disabled = (currentUser.role === 'tenant');
+
+        statusSelect.value = ticket.status;
+        notesField.value = ticket.notes || '';
+      }
+    } else {
+      modalTitle.textContent = 'Report Maintenance Issue';
+      statusSelect.value = 'pending';
+      notesField.value = '';
+    }
+
+    DOM.modals.maintenance.classList.add('active');
+  } catch (err) {
+    showToast('Failed to prepare maintenance form: ' + err.message, 'error');
+  }
+}
+
+async function handleMaintenanceSubmit(e) {
+  e.preventDefault();
+
+  const ticketId = document.getElementById('maint-id-input').value;
+  const data = {
+    property_id: document.getElementById('maint-property-id').value,
+    description: document.getElementById('maint-desc').value,
+    status: document.getElementById('maint-status').value,
+    notes: document.getElementById('maint-notes').value || null
+  };
+
+  try {
+    if (ticketId) {
+      // For updates, we pass status and notes
+      await api.updateMaintenanceTicket(ticketId, {
+        status: data.status,
+        notes: data.notes
+      });
+      showToast('Maintenance ticket updated successfully', 'success');
+    } else {
+      if (!data.property_id) {
+        throw new Error('Please select a property.');
+      }
+      await api.createMaintenanceTicket(data);
+      showToast('Maintenance issue reported successfully', 'success');
+    }
+
+    closeAllModals();
+
+    // Refresh lists
+    const activeTab = document.querySelector('#maintenance-tabs .tab.active');
+    const tabName = activeTab ? activeTab.getAttribute('data-tab') : 'active';
+    await renderMaintenanceList(tabName);
+
+    // Also reload dashboard to update counts
+    await loadDashboardData();
+  } catch (err) {
+    showToast(err.message, 'error');
   }
 }
