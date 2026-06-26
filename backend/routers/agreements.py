@@ -174,6 +174,15 @@ def terminate_agreement(
     if agreement.property:
         agreement.property.status = "vacant"
 
+    # Cascade cleanup: delete all future unpaid payments (pending or overdue with due date in future)
+    # This leaves past-due unpaid payments as outstanding balance that the tenant still owes.
+    current_date_str = datetime.now().strftime("%Y-%m-%d")
+    db.query(Payment).filter(
+        Payment.agreement_id == agreement_id,
+        Payment.status != "paid",
+        Payment.due_date > current_date_str
+    ).delete()
+
     db.commit()
     db.refresh(agreement)
     return map_agreement_to_response(agreement, db)
@@ -185,13 +194,21 @@ def delete_agreement(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    if current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Only admins can delete agreements")
-
     agreement = db.query(Agreement).filter(Agreement.id == agreement_id).first()
     if not agreement:
         raise HTTPException(status_code=404, detail="Agreement not found")
 
+    # Allow admins, and the manager who owns the property
+    if current_user.role != "admin" and agreement.property.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Unauthorized to delete this agreement")
+
+    # If active, revert property back to vacant
+    if agreement.status == "active" and agreement.property:
+        agreement.property.status = "vacant"
+
+    # Delete all payments related to this agreement
+    db.query(Payment).filter(Payment.agreement_id == agreement_id).delete()
+
     db.delete(agreement)
     db.commit()
-    return {"message": "Agreement deleted successfully"}
+    return {"message": "Agreement and associated payments deleted successfully"}

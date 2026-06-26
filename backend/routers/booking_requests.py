@@ -121,6 +121,13 @@ def approve_booking_request(
     # Set property to occupied
     prop.status = "occupied"
 
+    # Auto-reject conflicting pending booking requests for this same property or by the same tenant
+    db.query(BookingRequest).filter(
+        (BookingRequest.property_id == req.property_id) | (BookingRequest.tenant_id == req.tenant_id),
+        BookingRequest.id != request_id,
+        BookingRequest.status == "pending"
+    ).update({"status": "rejected"})
+
     # Generate first payment record due in 1 month
     due_date = datetime.now() + timedelta(days=30)
     due_date_str = due_date.strftime("%Y-%m-%d")

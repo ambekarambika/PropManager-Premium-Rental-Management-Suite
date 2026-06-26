@@ -14,15 +14,27 @@ from routers.payments import router as payments_router
 from routers.maintenance import router as maintenance_router
 from routers.booking_requests import router as booking_requests_router
 from routers.dashboard import router as dashboard_router
+from routers.reviews import router as reviews_router
 
 
 app = FastAPI()
 
+import os
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+allowed_origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
+if not allowed_origins:
+    allowed_origins = [
+        "http://localhost:8080", 
+        "http://127.0.0.1:8080",
+        "http://localhost:5173",  # Vite dev server port
+        "https://prop-manager-premium-rental-managem.vercel.app",
+        "https://prop-manager-premium-rental-management-suite-2hrft3bmy.vercel.app",
+        "https://prop-manager-premium-renta-git-53c513-ambikas-projects-d012f307.vercel.app"
+    ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080", "http://127.0.0.1:8080","https://prop-manager-premium-rental-managem.vercel.app",
-        "https://prop-manager-premium-rental-management-suite-2hrft3bmy.vercel.app",
-        "https://prop-manager-premium-renta-git-53c513-ambikas-projects-d012f307.vercel.app"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -49,6 +61,7 @@ app.include_router(payments_router, prefix="/api")
 app.include_router(maintenance_router, prefix="/api")
 app.include_router(booking_requests_router, prefix="/api")
 app.include_router(dashboard_router, prefix="/api")
+app.include_router(reviews_router, prefix="/api")
 
 print("All API routers registered successfully")
 
@@ -67,4 +80,4 @@ def show_routes():
     print("=========================\n")
 
 import os
-app.mount("/", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "../frontend"), html=True))
+app.mount("/", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "../frontend/dist"), html=True))

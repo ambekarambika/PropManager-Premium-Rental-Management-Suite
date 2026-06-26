@@ -111,48 +111,76 @@ def seed_database():
             description="Cozy 2BHK flat with a spacious balcony overlooking the park.",
             address="Koregaon Park",
             city="Pune",
+            state="Maharashtra",
+            pincode="411001",
+            image_url="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80",
             property_type="flat",
             bedrooms=2,
             bathrooms=2,
             rent_amount=28000,
             status="occupied",
-            owner_id=manager_user.id
+            owner_id=manager_user.id,
+            owner_name="Landlord Ramesh",
+            owner_email="ramesh@example.com",
+            owner_phone="+91 99887 76655",
+            interior_images="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80,https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80,https://images.unsplash.com/photo-1556912172-45b7abe8b7e1?auto=format&fit=crop&w=800&q=80,https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=800&q=80"
         )
         p2 = Property(
             title="Green Valley Villa — 7A",
             description="Luxurious 4BHK gated community villa with private garden.",
             address="Baner",
             city="Pune",
+            state="Maharashtra",
+            pincode="411045",
+            image_url="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80",
             property_type="villa",
             bedrooms=4,
             bathrooms=4,
             rent_amount=55000,
             status="occupied",
-            owner_id=manager_user.id
+            owner_id=manager_user.id,
+            owner_name="Landlord Ramesh",
+            owner_email="ramesh@example.com",
+            owner_phone="+91 99887 76655",
+            interior_images="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=800&q=80,https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80,https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=800&q=80,https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80"
         )
         p3 = Property(
             title="MG Road Commercial Space",
             description="Premium ground floor commercial showroom location.",
             address="Deccan",
             city="Pune",
+            state="Maharashtra",
+            pincode="411004",
+            image_url="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80",
             property_type="commercial",
             bedrooms=None,
             bathrooms=1,
             rent_amount=42000,
             status="vacant",
-            owner_id=manager_user.id
+            owner_id=manager_user.id,
+            owner_name="Landlord Ramesh",
+            owner_email="ramesh@example.com",
+            owner_phone="+91 99887 76655",
+            interior_images="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80,https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=800&q=80,https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80"
         )
         p4 = Property(
             title="Shivaji Nagar PG Suites",
             description="Furnished studio spaces for students and working professionals.",
             address="Shivaji Nagar",
             city="Pune",
+            state="Maharashtra",
+            pincode="411005",
+            image_url="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80",
             property_type="studio",
             bedrooms=1,
             bathrooms=1,
             rent_amount=12000,
             status="occupied",
-            owner_id=manager_user.id
+            owner_id=manager_user.id,
+            owner_name="Landlord Ramesh",
+            owner_email="ramesh@example.com",
+            owner_phone="+91 99887 76655",
+            interior_images="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80,https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=800&q=80,https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=800&q=80"
         )
         
         db.add_all([p1, p2, p3, p4])

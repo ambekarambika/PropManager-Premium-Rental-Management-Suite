@@ -35,12 +35,20 @@ class Property(Base):
     description = Column(String, nullable=True)
     address = Column(String, nullable=False)
     city = Column(String, nullable=True)
+    state = Column(String, nullable=True)
+    pincode = Column(String, nullable=True)
+    image_url = Column(String, nullable=True)
     property_type = Column(String, nullable=False)  # flat, villa, commercial, studio
     bedrooms = Column(Integer, nullable=True)
     bathrooms = Column(Integer, nullable=True)
     rent_amount = Column(Integer, nullable=False)
     status = Column(String, default="vacant")  # vacant, occupied, maintenance
     owner_id = Column(Integer, ForeignKey("users.id"))
+    
+    owner_name = Column(String, nullable=True)
+    owner_email = Column(String, nullable=True)
+    owner_phone = Column(String, nullable=True)
+    interior_images = Column(String, nullable=True)
 
     owner = relationship("User")
 
@@ -98,6 +106,20 @@ class BookingRequest(Base):
     start_date = Column(String, nullable=False)
     end_date = Column(String, nullable=False)
     status = Column(String, default="pending")  # pending, approved, rejected
+    created_at = Column(String, nullable=False)
+
+    property = relationship("Property")
+    tenant = relationship("Tenant")
+
+
+class Review(Base):
+    __tablename__ = "reviews"
+
+    id = Column(Integer, primary_key=True, index=True)
+    property_id = Column(Integer, ForeignKey("properties.id"))
+    tenant_id = Column(Integer, ForeignKey("tenants.id"))
+    rating = Column(Integer, nullable=False)
+    comment = Column(String, nullable=True)
     created_at = Column(String, nullable=False)
 
     property = relationship("Property")

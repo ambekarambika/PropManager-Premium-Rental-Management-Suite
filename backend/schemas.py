@@ -69,12 +69,19 @@ class PropertyCreate(BaseModel):
     title: str
     address: str
     city: Optional[str] = None
+    state: Optional[str] = None
+    pincode: Optional[str] = None
+    image_url: Optional[str] = None
     type: str  # maps to property_type
     bedrooms: Optional[int] = None
     bathrooms: Optional[int] = None
     rent_amount: int
     description: Optional[str] = None
     status: Optional[str] = "vacant"
+    owner_name: Optional[str] = None
+    owner_email: Optional[str] = None
+    owner_phone: Optional[str] = None
+    interior_images: Optional[str] = None
 
 
 class PropertyResponse(BaseModel):
@@ -83,6 +90,9 @@ class PropertyResponse(BaseModel):
     description: Optional[str] = None
     address: str
     city: Optional[str] = None
+    state: Optional[str] = None
+    pincode: Optional[str] = None
+    image_url: Optional[str] = None
     type: str  # maps from property_type
     bedrooms: Optional[int] = None
     bathrooms: Optional[int] = None
@@ -90,6 +100,10 @@ class PropertyResponse(BaseModel):
     status: str
     owner_id: int
     manager_id: int  # maps from owner_id for frontend compatibility
+    owner_name: Optional[str] = None
+    owner_email: Optional[str] = None
+    owner_phone: Optional[str] = None
+    interior_images: Optional[str] = None
 
     class Config:
         orm_mode = True
@@ -188,6 +202,25 @@ class BookingRequestResponse(BaseModel):
     start_date: str
     end_date: str
     status: str
+    created_at: str
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
+
+
+class ReviewCreate(BaseModel):
+    rating: int
+    comment: Optional[str] = None
+
+
+class ReviewResponse(BaseModel):
+    id: int
+    property_id: int
+    tenant_id: int
+    tenant_name: str
+    rating: int
+    comment: Optional[str] = None
     created_at: str
 
     class Config:

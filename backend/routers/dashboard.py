@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from datetime import datetime
 from database import get_db
 from dependencies import get_current_user
 from models import User, Property, Agreement, Payment, Maintenance, BookingRequest, Tenant
@@ -116,6 +117,42 @@ def get_dashboard_data(
                 { "id": "act-1", "text": "Welcome to PropManager Suite!", "time": "Just now", "type": "info" }
             ]
 
+        # Calculate dynamic collection trend for the last 6 months
+        import calendar
+        trend_months = []
+        current_year = datetime.now().year
+        current_month = datetime.now().month
+
+        for i in range(5, -1, -1):
+            m = current_month - i
+            y = current_year
+            if m <= 0:
+                m += 12
+                y -= 1
+            trend_months.append({
+                "label": calendar.month_abbr[m],
+                "year_month": f"{y}-{m:02d}"
+            })
+
+        collection_trend = []
+        for tm in trend_months:
+            prefix = tm["year_month"]
+            month_paid_query = db.query(Payment).filter(
+                Payment.status == "paid",
+                Payment.payment_date.like(f"{prefix}%")
+            )
+            if role == "manager":
+                month_paid_query = month_paid_query.join(Agreement).join(Property).filter(Property.owner_id == current_user.id)
+            
+            month_paid = sum(p.amount for p in month_paid_query.all())
+            collection_trend.append(month_paid)
+
+        max_val = max(collection_trend) if collection_trend else 0
+        if max_val > 0:
+            normalized_trend = [int(10 + 70 * (val / max_val)) for val in collection_trend]
+        else:
+            normalized_trend = [10, 10, 10, 10, 10, 10]
+
         return {
             "kpi": {
                 "totalProperties": total_props,
@@ -127,7 +164,8 @@ def get_dashboard_data(
             },
             "dueRents": due_rents_list,
             "recentActivity": activities[:5],
-            "collectionTrend": [55, 60, 50, 65, 58, 70]
+            "collectionTrend": normalized_trend,
+            "collectionTrendLabels": [tm["label"] for tm in trend_months]
         }
 
     elif role == "tenant":
@@ -195,6 +233,26 @@ def get_dashboard_data(
                     "email": prop.owner.email,
                     "phone": prop.owner.phone or "+91 99999 99999"
                 }
+            
+            # Owner details
+            if prop.owner_name:
+                owner_contact = {
+                    "name": prop.owner_name,
+                    "email": prop.owner_email or "admin@example.com",
+                    "phone": prop.owner_phone or "+91 99999 88888"
+                }
+            else:
+                owner_contact = {
+                    "name": "Super Admin",
+                    "email": "admin@example.com",
+                    "phone": "+91 99999 88888"
+                }
+        else:
+            owner_contact = {
+                "name": "Super Admin",
+                "email": "admin@example.com",
+                "phone": "+91 99999 88888"
+            }
 
         # Format payments list for JSON serialization
         formatted_payments = []
@@ -228,7 +286,7 @@ def get_dashboard_data(
             "maintenanceTickets": formatted_maint,
             "contacts": {
                 "manager": manager_contact,
-                "owner": {"name": "Super Admin", "email": "admin@example.com", "phone": "+91 99999 88888"}
+                "owner": owner_contact
             }
         }
 

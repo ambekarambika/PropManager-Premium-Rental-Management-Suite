@@ -87,7 +87,7 @@ def update_tenant(
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
 
-    if current_user.role not in ("admin", "manager") and tenant.user_id != current_user.id:
+    if current_user.role != "admin" and tenant.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Unauthorized to edit this tenant")
 
     # Update Tenant properties
@@ -106,3 +106,49 @@ def update_tenant(
     db.refresh(tenant)
 
     return map_tenant_to_response(tenant)
+
+
+@router.delete("/{id}")
+def delete_tenant(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role not in ("admin", "manager"):
+        raise HTTPException(status_code=403, detail="Access denied: Admin or Manager permissions required")
+
+    tenant = db.query(Tenant).filter(Tenant.id == id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    # Cascade deletions:
+    # 1. Delete reviews by this tenant
+    from models import Review, BookingRequest, Agreement, Payment
+    db.query(Review).filter(Review.tenant_id == id).delete()
+
+    # 2. Delete booking requests by this tenant
+    db.query(BookingRequest).filter(BookingRequest.tenant_id == id).delete()
+
+    # 3. Handle agreements
+    agreements = db.query(Agreement).filter(Agreement.tenant_id == id).all()
+    for agr in agreements:
+        # Revert property status to vacant if agreement is active
+        if agr.status == "active" and agr.property:
+            agr.property.status = "vacant"
+        # Delete payments linked to agreement
+        db.query(Payment).filter(Payment.agreement_id == agr.id).delete()
+        db.delete(agr)
+
+    # 4. Save linked User to delete later
+    linked_user = tenant.user
+
+    # 5. Delete Tenant profile
+    db.delete(tenant)
+
+    # 6. Delete linked User account
+    if linked_user:
+        db.delete(linked_user)
+
+    db.commit()
+    return {"message": "Tenant and associated user account, agreements, payments, reviews, and bookings deleted successfully"}
+

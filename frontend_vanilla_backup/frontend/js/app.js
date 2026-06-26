@@ -47,6 +47,7 @@ const DOM = {
 
   modals: {
     property: document.getElementById('modal-property'),
+    propertyDetails: document.getElementById('modal-property-details'),
     tenant: document.getElementById('modal-tenant'),
     agreement: document.getElementById('modal-agreement'),
     payment: document.getElementById('modal-payment'),
@@ -80,6 +81,42 @@ function setupEventListeners() {
 
   if (DOM.loginForm) DOM.loginForm.addEventListener('submit', handleLogin);
   if (DOM.registerForm) DOM.registerForm.addEventListener('submit', handleRegister);
+
+  // Public Landing Page event listeners
+  const pubSearch = document.getElementById('public-search-input');
+  if (pubSearch) pubSearch.addEventListener('input', renderPublicLandingProperties);
+  
+  const pubType = document.getElementById('public-type-filter');
+  if (pubType) pubType.addEventListener('change', renderPublicLandingProperties);
+  
+  const pubRent = document.getElementById('public-rent-filter');
+  if (pubRent) pubRent.addEventListener('change', renderPublicLandingProperties);
+
+  const btnLandingLogin = document.getElementById('btn-landing-login');
+  if (btnLandingLogin) {
+    btnLandingLogin.addEventListener('click', () => {
+      DOM.authOverlay.style.display = 'flex';
+      DOM.loginForm.style.display = 'block';
+      DOM.registerForm.style.display = 'none';
+    });
+  }
+
+  const btnCloseAuth = document.getElementById('btn-close-auth');
+  if (btnCloseAuth) {
+    btnCloseAuth.addEventListener('click', () => {
+      DOM.authOverlay.style.display = 'none';
+    });
+  }
+
+  const exploreProps = (e) => {
+    e.preventDefault();
+    const sec = document.getElementById('properties');
+    if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+  };
+  const btnLandingExplore = document.getElementById('btn-landing-explore');
+  if (btnLandingExplore) btnLandingExplore.addEventListener('click', exploreProps);
+  const btnHeroExplore = document.getElementById('btn-hero-explore');
+  if (btnHeroExplore) btnHeroExplore.addEventListener('click', exploreProps);
 
   if (DOM.showRegisterLink) {
     DOM.showRegisterLink.addEventListener('click', (e) => {
@@ -232,32 +269,25 @@ function setupEventListeners() {
 
 async function checkAuth() {
   currentUser = await api.getCurrentUser();
+  const landingRoot = document.getElementById('landing-page-root');
   if (currentUser) {
-
+    if (landingRoot) landingRoot.style.display = 'none';
     DOM.authOverlay.style.display = 'none';
     DOM.appRoot.style.display = 'flex';
-
 
     DOM.userNameDisplay.textContent = currentUser.name;
     DOM.userRoleDisplay.textContent = currentUser.role === 'manager' ? 'Property Manager' : currentUser.role;
 
-
     const initials = currentUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
     DOM.userAvatarDisplay.textContent = initials;
 
-
     applyRolePermissions();
-
-
     switchView(currentView);
   } else {
-
-    DOM.authOverlay.style.display = 'flex';
+    if (landingRoot) landingRoot.style.display = 'block';
+    DOM.authOverlay.style.display = 'none';
     DOM.appRoot.style.display = 'none';
-    if (DOM.loginForm) {
-      DOM.loginForm.style.display = 'block';
-      DOM.registerForm.style.display = 'none';
-    }
+    renderPublicLandingProperties();
   }
 }
 
@@ -504,7 +534,29 @@ async function loadDashboardData() {
 
       const leaseCard = document.getElementById('tenant-lease-card');
       if (data.lease) {
+        const imgs = [data.lease.image_url];
+        if (data.lease.interior_images) {
+          data.lease.interior_images.split(',').forEach(url => {
+            if (url.trim()) imgs.push(url.trim());
+          });
+        }
+        
+        let thumbsMarkup = '';
+        if (imgs.length > 1) {
+          thumbsMarkup = `<div class="prop-gallery-thumbs" style="display:flex; gap:6px; overflow-x:auto; margin-top:8px; padding-bottom:4px;">`;
+          imgs.forEach((img, idx) => {
+            thumbsMarkup += `
+              <img src="${img}" class="prop-gallery-thumb ${idx === 0 ? 'active' : ''}" data-index="${idx}" style="width: 48px; height: 36px; border-radius: 4px; object-fit: cover; cursor: pointer; opacity: ${idx === 0 ? '1' : '0.6'}; border: 1.5px solid ${idx === 0 ? 'var(--primary)' : 'transparent'};">
+            `;
+          });
+          thumbsMarkup += `</div>`;
+        }
+
         leaseCard.innerHTML = `
+          <div class="prop-gallery-container" style="margin-bottom: 12px;">
+            <img src="${data.lease.image_url}" id="tenant-lease-gallery-main" class="prop-gallery-main" alt="Leased Property Image" style="width: 100%; height: 180px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--border-primary);">
+            ${thumbsMarkup}
+          </div>
           <div style="font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:4px">${data.lease.propertyName}</div>
           <div style="font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;margin-bottom:16px">
             <i class="ti ti-map-pin"></i> ${data.lease.address}
@@ -519,17 +571,48 @@ async function loadDashboardData() {
               <div style="font-size:16px;font-weight:700;color:var(--text-primary);margin-top:2px">${data.lease.deposit}</div>
             </div>
           </div>
-          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary)">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-bottom:14px">
             <span>Start: <strong>${formatDateMedium(data.lease.startDate)}</strong></span>
             <span>End: <strong>${formatDateMedium(data.lease.endDate)}</strong></span>
           </div>
-          <div style="margin-top: 16px; border-top: 1px solid var(--border-tertiary); padding-top: 12px; display: flex; justify-content: flex-end;">
+          
+          <div style="border-top: 1px solid var(--border-tertiary); padding-top: 12px; margin-bottom: 14px;">
+            <div style="font-size: 11px; color: var(--text-tertiary); text-transform: uppercase; font-weight: 700; margin-bottom: 8px;">My Property Contacts</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div style="padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-sm); border-left: 2px solid var(--primary);">
+                <div style="font-size: 9px; color: var(--text-tertiary); font-weight: 600;">MANAGER</div>
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${data.contacts.manager.name}</div>
+                <div style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;"><i class="ti ti-phone" style="font-size: 9px;"></i> ${data.contacts.manager.phone}</div>
+              </div>
+              <div style="padding: 8px; background: var(--bg-secondary); border-radius: var(--radius-sm); border-left: 2px solid #185FA5;">
+                <div style="font-size: 9px; color: var(--text-tertiary); font-weight: 600;">OWNER</div>
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${data.lease.owner_name}</div>
+                <div style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;"><i class="ti ti-phone" style="font-size: 9px;"></i> ${data.lease.owner_phone}</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-top: 1px solid var(--border-tertiary); padding-top: 12px; display: flex; justify-content: flex-end;">
             <button class="topbar-btn btn-cancel-lease" data-id="${data.lease.id}" style="color:var(--danger); border-color:var(--danger-bg); font-size:12px; padding:6px 12px; display:inline-flex; align-items:center; gap:4px; cursor:pointer;">
               <i class="ti ti-ban"></i> Cancel Lease Contract
             </button>
           </div>
         `;
 
+        // Switcher logic
+        const thumbs = leaseCard.querySelectorAll('.prop-gallery-thumb');
+        const mainImg = leaseCard.querySelector('#tenant-lease-gallery-main');
+        thumbs.forEach(t => {
+          t.addEventListener('click', () => {
+            thumbs.forEach(thumb => {
+              thumb.style.borderColor = 'transparent';
+              thumb.style.opacity = '0.6';
+            });
+            t.style.borderColor = 'var(--primary)';
+            t.style.opacity = '1';
+            mainImg.src = t.src;
+          });
+        });
 
         const cancelLeaseBtn = leaseCard.querySelector('.btn-cancel-lease');
         if (cancelLeaseBtn) {
@@ -539,7 +622,7 @@ async function loadDashboardData() {
               try {
                 await api.terminateAgreement(leaseId);
                 showToast('Your lease has been cancelled successfully.', 'success');
-                await loadDashboardData();
+                switchView('properties');
               } catch (err) {
                 showToast(err.message, 'error');
               }
@@ -731,17 +814,15 @@ async function renderPropertiesList(searchTerm = '') {
       const card = document.createElement('div');
       card.className = 'card';
       card.style.position = 'relative';
-
-      let thumbClass = 'flat';
-      let thumbIcon = 'ti-building';
-      if (p.type === 'villa') { thumbClass = 'villa'; thumbIcon = 'ti-home'; }
-      else if (p.type === 'commercial') { thumbClass = 'commercial'; thumbIcon = 'ti-briefcase'; }
-      else if (p.type === 'studio') { thumbClass = 'studio'; thumbIcon = 'ti-bed'; }
+      card.style.cursor = 'pointer';
 
       let statusBadgeClass = 'status-vacant';
       if (p.status === 'occupied') statusBadgeClass = 'status-occupied';
       else if (p.status === 'maintenance') statusBadgeClass = 'status-maintenance';
 
+      const interiorImages = p.interior_images ? p.interior_images.split(',').filter(x => x.trim()) : [];
+      const totalPhotos = 1 + interiorImages.length;
+      const photoCountBadge = totalPhotos > 1 ? `<div class="photo-count-badge">📷 ${totalPhotos} Photos</div>` : '';
 
       let actionsHtml = '';
       if (currentUser.role !== 'tenant') {
@@ -760,14 +841,15 @@ async function renderPropertiesList(searchTerm = '') {
       }
 
       card.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div class="prop-thumb ${thumbClass}"><i class="ti ${thumbIcon}" aria-hidden="true"></i></div>
-          <span class="prop-status ${statusBadgeClass}">${p.status}</span>
+        <div class="pub-prop-img-wrapper btn-details-trigger" style="position: relative; border-radius: var(--radius-md); overflow: hidden; height: 180px; margin-bottom: 12px;">
+          <img src="${p.image_url}" alt="${p.title}" style="width:100%; height:100%; object-fit:cover;">
+          <span class="prop-status ${statusBadgeClass}" style="position: absolute; top: 12px; left: 12px; margin-top:0; z-index:5;">${p.status}</span>
+          ${photoCountBadge}
         </div>
-        <div style="margin-top:12px">
+        <div class="btn-details-trigger">
           <div style="font-size:15px;font-weight:700;color:var(--text-primary)">${p.title}</div>
-          <div class="prop-loc"><i class="ti ti-map-pin"></i> ${p.address}, ${p.city}</div>
-          <div style="font-size:12px;color:var(--text-secondary);margin-top:8px">${p.description || 'No description provided.'}</div>
+          <div class="prop-loc" style="margin-top:4px;"><i class="ti ti-map-pin"></i> ${p.address}, ${p.city}</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:8px;min-height:34px;line-height:1.4;">${p.description || 'No description provided.'}</div>
           
           <div style="display:flex;gap:12px;margin-top:12px;font-size:12px;color:var(--text-secondary);background:var(--bg-secondary);padding:8px 12px;border-radius:var(--radius-sm)">
             <span>Bedrooms: <strong>${p.bedrooms || 'N/A'}</strong></span>
@@ -778,12 +860,24 @@ async function renderPropertiesList(searchTerm = '') {
         ${actionsHtml}
       `;
 
+      card.querySelectorAll('.btn-details-trigger').forEach(el => {
+        el.addEventListener('click', () => openPropertyDetailsModal(p.id));
+      });
 
       if (currentUser.role !== 'tenant') {
-        card.querySelector('.btn-edit-prop').addEventListener('click', () => openPropertyModal(p.id));
-        card.querySelector('.btn-delete-prop').addEventListener('click', () => handlePropertyDelete(p.id));
+        card.querySelector('.btn-edit-prop').addEventListener('click', (e) => {
+          e.stopPropagation();
+          openPropertyModal(p.id);
+        });
+        card.querySelector('.btn-delete-prop').addEventListener('click', (e) => {
+          e.stopPropagation();
+          handlePropertyDelete(p.id);
+        });
       } else if (p.status === 'vacant') {
-        card.querySelector('.btn-book-prop').addEventListener('click', () => openBookingModal(p.id, p.title));
+        card.querySelector('.btn-book-prop').addEventListener('click', (e) => {
+          e.stopPropagation();
+          openBookingModal(p.id, p.title);
+        });
       }
 
       container.appendChild(card);
@@ -1042,12 +1136,20 @@ async function renderAgreementsList() {
       else if (a.status === 'terminated') statusClass = 'status-maintenance';
 
       let actionColumn = '<td>—</td>';
-      if (currentUser.role !== 'tenant' && a.status === 'active') {
-        actionColumn = `
-          <td>
-            <button class="topbar-btn btn-terminate-agreement" data-id="${a.id}" style="padding:4px 8px;font-size:11px;color:var(--danger);border-color:var(--danger-bg)"><i class="ti ti-ban"></i> Terminate</button>
-          </td>
-        `;
+      if (currentUser.role !== 'tenant') {
+        if (a.status === 'active') {
+          actionColumn = `
+            <td>
+              <button class="topbar-btn btn-terminate-agreement" data-id="${a.id}" style="padding:4px 8px;font-size:11px;color:var(--danger);border-color:var(--danger-bg)"><i class="ti ti-ban"></i> Terminate</button>
+            </td>
+          `;
+        } else {
+          actionColumn = `
+            <td>
+              <button class="topbar-btn btn-delete-agreement" data-id="${a.id}" style="padding:4px 8px;font-size:11px;color:var(--danger);border-color:var(--danger-bg)"><i class="ti ti-trash"></i> Delete</button>
+            </td>
+          `;
+        }
       }
 
       row.innerHTML = `
@@ -1062,14 +1164,33 @@ async function renderAgreementsList() {
         ${actionColumn}
       `;
 
-      if (currentUser.role !== 'tenant' && a.status === 'active') {
-        row.querySelector('.btn-terminate-agreement').addEventListener('click', () => handleAgreementTerminate(a.id));
+      if (currentUser.role !== 'tenant') {
+        const termBtn = row.querySelector('.btn-terminate-agreement');
+        if (termBtn) {
+          termBtn.addEventListener('click', () => handleAgreementTerminate(a.id));
+        }
+        const delBtn = row.querySelector('.btn-delete-agreement');
+        if (delBtn) {
+          delBtn.addEventListener('click', () => handleAgreementDelete(a.id));
+        }
       }
 
       tableBody.appendChild(row);
     });
   } catch (err) {
     tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--danger)">Error: ${err.message}</td></tr>`;
+  }
+}
+
+async function handleAgreementDelete(id) {
+  if (confirm('Are you sure you want to permanently delete this lease agreement record and all related payment ledger records?')) {
+    try {
+      await api.deleteAgreement(id);
+      showToast('Lease agreement deleted successfully.', 'success');
+      await renderAgreementsList();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
   }
 }
 
@@ -1268,30 +1389,42 @@ function loadSettingsData() {
   const isTenant = currentUser.role === 'tenant';
 
   details.innerHTML = `
-    <div class="card" style="max-width: 500px">
-      <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:14px">Profile Details</div>
-      
-      <form id="form-profile-update">
-        <div class="form-group">
-          <label class="form-label" for="profile-name">Full Name</label>
-          <input type="text" id="profile-name" class="form-control" value="${currentUser.name}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="profile-email">Email Address</label>
-          <input type="email" id="profile-email" class="form-control" value="${currentUser.email}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="profile-phone">Phone Number</label>
-          <input type="text" id="profile-phone" class="form-control" value="${currentUser.phone || ''}">
-        </div>
-        ${isTenant ? `
-        <div class="form-group">
-          <label class="form-label" for="profile-emergency">Emergency Contact</label>
-          <input type="text" id="profile-emergency" class="form-control" value="${currentUser.emergency_contact || ''}">
-        </div>
-        ` : ''}
-        <button type="submit" class="topbar-btn primary" style="margin-top:16px; width:100%; justify-content:center">Save Profile Changes</button>
-      </form>
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      <div class="card" style="max-width: 500px">
+        <div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:14px">Profile Details</div>
+        
+        <form id="form-profile-update">
+          <div class="form-group">
+            <label class="form-label" for="profile-name">Full Name</label>
+            <input type="text" id="profile-name" class="form-control" value="${currentUser.name}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="profile-email">Email Address</label>
+            <input type="email" id="profile-email" class="form-control" value="${currentUser.email}" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="profile-phone">Phone Number</label>
+            <input type="text" id="profile-phone" class="form-control" value="${currentUser.phone || ''}">
+          </div>
+          ${isTenant ? `
+          <div class="form-group">
+            <label class="form-label" for="profile-emergency">Emergency Contact</label>
+            <input type="text" id="profile-emergency" class="form-control" value="${currentUser.emergency_contact || ''}">
+          </div>
+          ` : ''}
+          <button type="submit" class="topbar-btn primary" style="margin-top:16px; width:100%; justify-content:center">Save Profile Changes</button>
+        </form>
+      </div>
+
+      <div class="card" style="max-width: 500px; border-color: var(--danger-bg);">
+        <div style="font-size:15px;font-weight:700;color:var(--danger);margin-bottom:8px">Database Management</div>
+        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:16px; line-height:1.5;">
+          Running in persistent local mock database mode. Click the button below to wipe local changes and restore all default users, properties, active leases, payments, and reviews to their original seed state.
+        </p>
+        <button id="btn-reset-db" type="button" class="topbar-btn" style="color:var(--danger); border-color:var(--danger-bg); width:100%; justify-content:center;">
+          <i class="ti ti-rotate"></i> Reset Mock Database Data
+        </button>
+      </div>
     </div>
   `;
 
@@ -1314,6 +1447,19 @@ function loadSettingsData() {
       showToast(err.message, 'error');
     }
   });
+
+  const btnResetDb = document.getElementById('btn-reset-db');
+  if (btnResetDb) {
+    btnResetDb.addEventListener('click', () => {
+      if (confirm('Are you sure you want to completely reset the database to default state? This will wipe all changes, reviews, and lease terms and log you out.')) {
+        api.resetMockDB();
+        showToast('Database reset successfully. Reloading...', 'success');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
+    });
+  }
 }
 
 
@@ -1784,5 +1930,353 @@ async function handleMaintenanceSubmit(e) {
     await loadDashboardData();
   } catch (err) {
     showToast(err.message, 'error');
+  }
+}
+
+async function renderPublicLandingProperties() {
+  const container = document.getElementById('public-properties-list');
+  if (!container) return;
+
+  const searchVal = document.getElementById('public-search-input')?.value || '';
+  const typeVal = document.getElementById('public-type-filter')?.value || 'all';
+  const rentVal = document.getElementById('public-rent-filter')?.value || 'all';
+
+  container.innerHTML = '<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-tertiary);">Loading vacant properties...</div>';
+
+  try {
+    let list = await api.getProperties();
+    // Public landing page only shows vacant properties
+    list = list.filter(p => p.status === 'vacant');
+
+    // Filter by search query
+    if (searchVal) {
+      const q = searchVal.toLowerCase();
+      list = list.filter(p => p.title.toLowerCase().includes(q) || p.address.toLowerCase().includes(q) || p.city.toLowerCase().includes(q));
+    }
+
+    // Filter by type
+    if (typeVal !== 'all') {
+      list = list.filter(p => p.type === typeVal);
+    }
+
+    // Filter by rent range
+    if (rentVal !== 'all') {
+      if (rentVal === '0-15000') {
+        list = list.filter(p => p.rent_amount <= 15000);
+      } else if (rentVal === '15000-30000') {
+        list = list.filter(p => p.rent_amount > 15000 && p.rent_amount <= 30000);
+      } else if (rentVal === '30000-50000') {
+        list = list.filter(p => p.rent_amount > 30000 && p.rent_amount <= 50000);
+      } else if (rentVal === '50000+') {
+        list = list.filter(p => p.rent_amount > 50000);
+      }
+    }
+
+    container.innerHTML = '';
+
+    if (list.length === 0) {
+      container.innerHTML = '<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-secondary);">No vacant properties found matching the criteria.</div>';
+      return;
+    }
+
+    list.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.position = 'relative';
+      card.style.cursor = 'pointer';
+
+      const interiorImages = p.interior_images ? p.interior_images.split(',').filter(x => x.trim()) : [];
+      const totalPhotos = 1 + interiorImages.length;
+      const photoCountBadge = totalPhotos > 1 ? `<div class="photo-count-badge">📷 ${totalPhotos} Photos</div>` : '';
+
+      card.innerHTML = `
+        <div class="pub-prop-img-wrapper" style="position: relative; border-radius: var(--radius-md); overflow: hidden; height: 200px; margin-bottom: 15px;">
+          <img src="${p.image_url}" alt="${p.title}" style="width:100%; height:100%; object-fit:cover;">
+          <span class="prop-status status-vacant" style="position: absolute; top: 12px; left: 12px; margin-top:0; z-index:5;">Vacant</span>
+          ${photoCountBadge}
+        </div>
+        <div style="padding: 0 5px 10px 5px;">
+          <div style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">${p.title}</div>
+          <div class="prop-loc" style="margin-bottom: 8px;"><i class="ti ti-map-pin"></i> ${p.address}, ${p.city}</div>
+          <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; min-height:36px; line-height: 1.4;">${p.description || 'No description provided.'}</div>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <div style="font-family: var(--font-heading); font-size: 16px; font-weight: 800; color: var(--primary);">₹${p.rent_amount.toLocaleString('en-IN')}/mo</div>
+            <div style="display:flex; gap:10px; font-size: 11px; color: var(--text-secondary);">
+              <span>${p.bedrooms ? `${p.bedrooms} BHK` : 'Studio'}</span>
+              <span>·</span>
+              <span>${p.bathrooms || 1} Bath</span>
+            </div>
+          </div>
+          
+          <button type="button" class="topbar-btn primary" style="width: 100%; justify-content: center; padding: 10px; border-radius: 20px; font-size: 12px;">
+            <i class="ti ti-eye"></i> View Details
+          </button>
+        </div>
+      `;
+
+      card.addEventListener('click', () => {
+        openPropertyDetailsModal(p.id);
+      });
+
+      container.appendChild(card);
+    });
+
+  } catch (err) {
+    container.innerHTML = `<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--danger);">Error loading properties: ${err.message}</div>`;
+  }
+}
+
+async function openPropertyDetailsModal(propertyId) {
+  try {
+    const p = await api.getProperty(propertyId);
+    
+    // Set title
+    document.getElementById('prop-details-title').textContent = p.title;
+
+    // Render interactive gallery
+    const galleryContainer = document.getElementById('prop-details-gallery-container');
+    const imgs = [p.image_url];
+    if (p.interior_images) {
+      p.interior_images.split(',').forEach(url => {
+        if (url.trim()) imgs.push(url.trim());
+      });
+    }
+
+    let thumbsMarkup = '';
+    if (imgs.length > 1) {
+      thumbsMarkup = `<div class="prop-gallery-thumbs" id="modal-gallery-thumbs">`;
+      imgs.forEach((img, idx) => {
+        thumbsMarkup += `
+          <img src="${img}" class="prop-gallery-thumb ${idx === 0 ? 'active' : ''}" data-index="${idx}">
+        `;
+      });
+      thumbsMarkup += `</div>`;
+    }
+
+    galleryContainer.innerHTML = `
+      <div class="prop-gallery-container">
+        <img src="${p.image_url}" id="modal-gallery-main" class="prop-gallery-main" alt="Property Main Image">
+        ${thumbsMarkup}
+      </div>
+    `;
+
+    // Hook up gallery switcher
+    if (imgs.length > 1) {
+      const thumbs = galleryContainer.querySelectorAll('.prop-gallery-thumb');
+      const mainImg = galleryContainer.querySelector('#modal-gallery-main');
+      thumbs.forEach(t => {
+        t.addEventListener('click', () => {
+          thumbs.forEach(thumb => thumb.classList.remove('active'));
+          t.classList.add('active');
+          mainImg.src = t.src;
+        });
+      });
+    }
+
+    // Render specification grid & description
+    const infoContainer = document.getElementById('prop-details-info-container');
+    infoContainer.innerHTML = `
+      <div class="spec-grid" style="margin-top: 15px;">
+        <div class="spec-item">
+          <span class="spec-label">Monthly Rent</span>
+          <span class="spec-value">₹${p.rent_amount.toLocaleString('en-IN')}</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Bedrooms</span>
+          <span class="spec-value">${p.bedrooms || 'N/A'}</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Bathrooms</span>
+          <span class="spec-value">${p.bathrooms || 'N/A'}</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Type</span>
+          <span class="spec-value" style="text-transform: capitalize;">${p.type}</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">City</span>
+          <span class="spec-value">${p.city}</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Status</span>
+          <span class="spec-value" style="text-transform: capitalize;">${p.status}</span>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 15px;">
+        <strong>About this property:</strong><br>${p.description || 'No description provided.'}
+      </div>
+    `;
+
+    // Render Contacts
+    const contactsContainer = document.getElementById('prop-details-contacts-container');
+    contactsContainer.innerHTML = `
+      <div style="font-size: 11px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Contact Information</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div style="background: var(--bg-secondary); padding: 10px; border-radius: var(--radius-md); border-left: 3px solid var(--primary);">
+          <div style="font-size: 9px; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase;">Property Manager</div>
+          <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-top: 2px;">Rajesh Kumar</div>
+          <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
+            <div><i class="ti ti-phone"></i> +91 98765 43210</div>
+            <div style="margin-top:2px;"><i class="ti ti-mail"></i> rajesh@example.com</div>
+          </div>
+        </div>
+        <div style="background: var(--bg-secondary); padding: 10px; border-radius: var(--radius-md); border-left: 3px solid #185FA5;">
+          <div style="font-size: 9px; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase;">Property Owner</div>
+          <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-top: 2px;">${p.owner_name || 'Landlord Ramesh'}</div>
+          <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
+            <div><i class="ti ti-phone"></i> ${p.owner_phone || '+91 99887 76655'}</div>
+            <div style="margin-top:2px;"><i class="ti ti-mail"></i> ${p.owner_email || 'ramesh@example.com'}</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Render Reviews list & Add Review form
+    const reviews = await api.getPropertyReviews(p.id);
+    const reviewsContainer = document.getElementById('prop-details-reviews-container');
+    
+    let reviewsListHtml = '';
+    if (reviews.length === 0) {
+      reviewsListHtml = '<div style="font-size: 12px; color: var(--text-secondary); font-style: italic; padding: 10px 0; text-align: center;">No reviews yet for this property.</div>';
+    } else {
+      reviews.forEach(r => {
+        let starsHtml = '';
+        for (let i = 1; i <= 5; i++) {
+          starsHtml += `<i class="ti ${i <= r.rating ? 'ti-star-filled' : 'ti-star'}" style="color: ${i <= r.rating ? '#fbbf24' : 'var(--text-tertiary)'}; font-size: 12px;"></i>`;
+        }
+        reviewsListHtml += `
+          <div style="border-bottom: 1px solid var(--border-tertiary); padding: 10px 0; font-size: 12px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <strong style="color: var(--text-primary);">${r.tenant_name || 'Anonymous Tenant'}</strong>
+              <span style="color: var(--text-tertiary); font-size: 10px;">${r.created_at}</span>
+            </div>
+            <div style="margin-bottom: 4px;">${starsHtml}</div>
+            <div style="color: var(--text-secondary); line-height: 1.4;">${r.comment}</div>
+          </div>
+        `;
+      });
+    }
+
+    let addReviewFormHtml = '';
+    if (currentUser && currentUser.role === 'tenant') {
+      addReviewFormHtml = `
+        <div style="margin-top: 15px; background: var(--bg-secondary); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-primary);">
+          <div style="font-size: 11px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; text-transform: uppercase;">Write a Review</div>
+          <form id="form-add-review">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+              <span style="font-size: 11px; color: var(--text-secondary); font-weight:600;">Rating:</span>
+              <div class="star-rating-select" id="review-stars-select" style="margin-bottom:0; font-size:18px;">
+                <i class="ti ti-star-filled active" data-value="1"></i>
+                <i class="ti ti-star" data-value="2"></i>
+                <i class="ti ti-star" data-value="3"></i>
+                <i class="ti ti-star" data-value="4"></i>
+                <i class="ti ti-star" data-value="5"></i>
+              </div>
+              <input type="hidden" id="review-rating-value" value="1">
+            </div>
+            <div class="form-group" style="margin-bottom: 8px;">
+              <textarea id="review-comment" class="form-control" rows="2" placeholder="Tell us about your experience..." required style="font-size:12px; padding: 6px 10px;"></textarea>
+            </div>
+            <button type="submit" class="topbar-btn primary" style="padding: 5px 12px; font-size: 11px; width: 100%; justify-content: center;">Submit Review</button>
+          </form>
+        </div>
+      `;
+    }
+
+    reviewsContainer.innerHTML = `
+      <div style="font-size: 11px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Tenants Ratings & Reviews</div>
+      <div style="max-height: 180px; overflow-y: auto; padding-right: 5px;" id="modal-reviews-list-inner">
+        ${reviewsListHtml}
+      </div>
+      ${addReviewFormHtml}
+    `;
+
+    // Hook up review stars & form submission
+    if (currentUser && currentUser.role === 'tenant') {
+      const starContainer = document.getElementById('review-stars-select');
+      const stars = starContainer.querySelectorAll('i');
+      const ratingInput = document.getElementById('review-rating-value');
+      
+      stars.forEach(star => {
+        star.addEventListener('click', () => {
+          const val = parseInt(star.getAttribute('data-value'));
+          ratingInput.value = val;
+          stars.forEach(s => {
+            const sVal = parseInt(s.getAttribute('data-value'));
+            if (sVal <= val) {
+              s.className = 'ti ti-star-filled active';
+            } else {
+              s.className = 'ti ti-star';
+            }
+          });
+        });
+      });
+
+      const addReviewForm = document.getElementById('form-add-review');
+      addReviewForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const rating = ratingInput.value;
+        const comment = document.getElementById('review-comment').value;
+        try {
+          await api.createPropertyReview(p.id, { rating, comment });
+          showToast('Review submitted successfully!', 'success');
+          // Refresh reviews list modal
+          await openPropertyDetailsModal(p.id);
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+    }
+
+    // Footers
+    const footer = document.getElementById('prop-details-footer');
+    let footerHtml = '<button type="button" class="topbar-btn btn-cancel-details">Close</button>';
+    
+    if (p.status === 'vacant') {
+      if (!currentUser) {
+        footerHtml += `
+          <button type="button" class="topbar-btn primary" id="btn-details-login" style="padding: 8px 16px; border-radius: 20px;">
+            <i class="ti ti-login"></i> Login to Book
+          </button>
+        `;
+      } else if (currentUser.role === 'tenant') {
+        footerHtml += `
+          <button type="button" class="topbar-btn primary" id="btn-details-book" style="padding: 8px 16px; border-radius: 20px;">
+            <i class="ti ti-calendar-event"></i> Book Now
+          </button>
+        `;
+      }
+    }
+
+    footer.innerHTML = footerHtml;
+
+    footer.querySelector('.btn-cancel-details').addEventListener('click', () => {
+      DOM.modals.propertyDetails.classList.remove('active');
+    });
+
+    const btnDetailsLogin = footer.querySelector('#btn-details-login');
+    if (btnDetailsLogin) {
+      btnDetailsLogin.addEventListener('click', () => {
+        DOM.modals.propertyDetails.classList.remove('active');
+        DOM.authOverlay.style.display = 'flex';
+        DOM.loginForm.style.display = 'block';
+        DOM.registerForm.style.display = 'none';
+      });
+    }
+
+    const btnDetailsBook = footer.querySelector('#btn-details-book');
+    if (btnDetailsBook) {
+      btnDetailsBook.addEventListener('click', () => {
+        DOM.modals.propertyDetails.classList.remove('active');
+        openBookingModal(p.id, p.title);
+      });
+    }
+
+    // Open modal details
+    DOM.modals.propertyDetails.classList.add('active');
+
+  } catch (err) {
+    showToast('Failed to load property details: ' + err.message, 'error');
   }
 }
