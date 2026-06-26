@@ -27,9 +27,8 @@ if not allowed_origins:
         "http://localhost:8080", 
         "http://127.0.0.1:8080",
         "http://localhost:5173",  # Vite dev server port
-        "https://prop-manager-premium-rental-managem.vercel.app",
-        "https://prop-manager-premium-rental-management-suite-2hrft3bmy.vercel.app",
-        "https://prop-manager-premium-renta-git-53c513-ambikas-projects-d012f307.vercel.app"
+        "https://prop-manager-premium-rental-managemen-ambikas-projects-d012f307.vercel.app",
+        "https://prop-manager-premium-rental-managem.vercel.app"
     ]
 
 app.add_middleware(
@@ -80,4 +79,9 @@ def show_routes():
     print("=========================\n")
 
 import os
-app.mount("/", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "../frontend/dist"), html=True))
+frontend_dist_dir = os.path.join(os.path.dirname(__file__), "../frontend/dist")
+if os.path.exists(frontend_dist_dir):
+    app.mount("/", StaticFiles(directory=frontend_dist_dir, html=True))
+else:
+    print(f"Frontend dist directory not found at: {frontend_dist_dir}. Serving API only.")
+
