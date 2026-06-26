@@ -235,16 +235,19 @@
     }
   }
 
-  $: getCardImages = (p) => {
+  function getCardImages(p) {
     if (!p) return [];
-    const list = [p.image_url];
+    const list = [];
+    if (p.image_url) {
+      list.push(p.image_url);
+    }
     if (p.interior_images) {
       p.interior_images.split(',').forEach(url => {
         if (url.trim()) list.push(url.trim());
       });
     }
-    return list.slice(0, 4); // show up to 4 thumbnails on card scroll
-  };
+    return list;
+  }
 
   $: {
     if (selectedProperty) {
@@ -308,7 +311,7 @@
           <!-- Horizontal thumbnail scroll gallery (Item 7 Requirement) -->
           {#if getCardImages(p).length > 1}
             <div class="horizontal-thumbnail-scroll" on:click|stopPropagation style="display:flex; gap:6px; overflow-x:auto; padding:8px; background:var(--bg-secondary); border-bottom:1px solid var(--border-primary);">
-              {#each getCardImages(p) as img}
+              {#each getCardImages(p).slice(0, 4) as img}
                 <img 
                   src={img} 
                   alt="preview" 
