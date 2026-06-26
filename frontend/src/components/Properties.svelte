@@ -236,6 +236,7 @@
   }
 
   $: getCardImages = (p) => {
+    if (!p) return [];
     const list = [p.image_url];
     if (p.interior_images) {
       p.interior_images.split(',').forEach(url => {
@@ -244,6 +245,13 @@
     }
     return list.slice(0, 4); // show up to 4 thumbnails on card scroll
   };
+
+  $: {
+    if (selectedProperty) {
+      console.log("selectedProperty is: ", selectedProperty);
+      console.log("getCardImages(selectedProperty):", getCardImages(selectedProperty));
+    }
+  }
 
   $: filteredProperties = properties.filter(p => {
     const searchStr = $globalSearch.toLowerCase();
